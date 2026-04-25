@@ -1,0 +1,30 @@
+# Agent/runtime state (local, noisy, not source)
+.omx/
+.claude/settings.local.json
+
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Environment/secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Generated outputs
+build/
+dist/
+graphify-out/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
