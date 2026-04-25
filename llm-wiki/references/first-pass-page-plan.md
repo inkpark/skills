@@ -11,6 +11,12 @@ Start from the requested immutable source set, usually a small group of Markdown
 
 For large repositories, sample first and propose a staged plan instead of generating the full wiki at once.
 
+## Wiki language
+
+Target wiki language: `<ask the user if not explicit; examples: zh-CN, en, bilingual, or another user-specified language>`.
+
+Do not begin writing `wiki/` pages until the user has explicitly specified or selected this value. Record the selected value in each new maintained page's frontmatter as `language: <value>`.
+
 ## Proposed wiki pages
 
 | Page | Type | Sources | Purpose |
@@ -32,6 +38,7 @@ For large repositories, sample first and propose a staged plan instead of genera
 title: "Example Source Summary"
 type: source
 status: draft
+language: en
 sources:
   - "raw/example-source-a.md"
 tags: [llm-wiki]
@@ -66,6 +73,7 @@ Record reusable terms, examples, caveats, or implementation details that help fu
 title: "Example Shared Concept"
 type: concept
 status: draft
+language: en
 sources:
   - "raw/example-source-a.md"
   - "raw/example-source-b.md"

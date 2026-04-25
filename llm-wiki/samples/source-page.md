@@ -2,6 +2,7 @@
 title: "Example Source Summary"
 type: source
 status: draft
+language: en
 sources:
   - "raw/example-source.md"
 tags: [llm-wiki]

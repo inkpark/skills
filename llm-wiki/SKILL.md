@@ -13,6 +13,7 @@ Use this skill from any capable AI agent when the user asks to ingest notes into
 - Treat `wiki/` as the reviewable compiled Markdown layer.
 - Treat `graphify-out/` as generated, reproducible graph output; use it to navigate and synthesize raw notes, but never cite it as canonical source content.
 - Do not install `graphifyy`, run `graphify`, call models/APIs, or generate a full wiki unless the user explicitly requests that execution step.
+- Before creating or updating `wiki/` pages, determine the target wiki language. If the user did not explicitly specify it in the current request or accepted page plan, open a short choice/input dialog when the agent UI supports it, or ask in chat, and wait for the user to choose or specify the language.
 - Prefer small, reviewable wiki updates and record meaningful changes in `wiki/log.md`.
 
 ## Reference map
@@ -30,13 +31,14 @@ Read only the references needed for the current request:
 ## Workflow: ingest plan
 
 1. Identify the requested source set. For new or large sets, list proposed wiki pages before writing.
-2. Read selected `raw/*.md` files as evidence only; do not alter them.
-3. If an approved raw Graphify map exists under `graphify-out/raw-map/`, use it as a navigation and clustering aid before mapping raw sources; otherwise map directly from selected raw files.
-4. Map each raw source to at least one `wiki/sources/*.md` page and at most a small justified set of concept/workflow pages.
-5. Draft source pages with provenance in frontmatter and concise claim summaries.
-6. Draft concept/workflow pages only when they synthesize multiple sources or encode reusable procedure.
-7. Update `wiki/index.md` and append an entry to `wiki/log.md` for accepted writes.
-8. Stop before full wiki generation unless execution scope explicitly allows it.
+2. Determine the target wiki language before any wiki write. If it is not explicit, ask: "请选择或指定本次 wiki 使用的语种（例如 zh-CN、en、bilingual 或其他）" and do not proceed with wiki writes until the user answers.
+3. Read selected `raw/*.md` files as evidence only; do not alter them.
+4. If an approved raw Graphify map exists under `graphify-out/raw-map/`, use it as a navigation and clustering aid before mapping raw sources; otherwise map directly from selected raw files.
+5. Map each raw source to at least one `wiki/sources/*.md` page and at most a small justified set of concept/workflow pages.
+6. Draft source pages in the chosen wiki language, with provenance and `language` in frontmatter plus concise claim summaries.
+7. Draft concept/workflow pages in the chosen wiki language only when they synthesize multiple sources or encode reusable procedure.
+8. Update `wiki/index.md` and append an entry to `wiki/log.md` for accepted writes.
+9. Stop before full wiki generation unless execution scope explicitly allows it.
 
 ## Workflow: query
 
@@ -45,7 +47,7 @@ Read only the references needed for the current request:
 3. After answering, decide whether the result contains durable knowledge: a reusable synthesis, comparison, decision, source map, or workflow clarification that future queries should find.
 4. If durable knowledge was produced, do not leave it only in chat history:
    - for ordinary query prompts, offer a scoped wiki update with a proposed page title/path and the provenance that would be filed;
-   - when the user requested wiki maintenance, compounding, or autonomous execution, perform the scoped update instead of merely offering it.
+   - when the user requested wiki maintenance, compounding, or autonomous execution, perform the scoped update instead of merely offering it, but first apply the wiki-language gate if the target language was not explicit.
 5. For accepted or performed durable updates, write the synthesis into the smallest suitable `wiki/` page, update `wiki/index.md` when navigation changes, and append a `wiki/log.md` entry.
 
 ## Workflow: lint

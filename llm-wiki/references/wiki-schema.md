@@ -35,6 +35,7 @@ All maintained wiki pages should start with YAML frontmatter:
 title: "Readable page title"
 type: source | concept | workflow | index | log
 status: draft | review | stable
+language: zh-CN
 sources:
   - "raw/example.md"
 tags: [llm-wiki]
@@ -45,9 +46,28 @@ updated: YYYY-MM-DD
 Rules:
 
 - `title`, `type`, `status`, and `updated` are required except for legacy pages being linted.
+- `language` is required for new maintained pages and records the user-selected wiki language, for example `zh-CN`, `en`, `ja`, or `bilingual`.
 - `sources` is required for `source` and `concept` pages; it may be empty or omitted for generic workflow pages.
 - Use paths relative to the knowledge repository root for raw provenance.
 - Keep tags sparse and reusable.
+
+## Language policy
+
+The target wiki language is a user-facing content decision. Before creating or updating `wiki/` pages, the agent must confirm the language when it is not explicit in the user's request or an accepted page plan.
+
+Suggested prompt:
+
+```text
+请选择或指定本次 wiki 使用的语种（例如 zh-CN、en、bilingual 或其他）。
+```
+
+Rules:
+
+- Do not infer the wiki language solely from the raw source language, repository locale, or current chat language.
+- If the agent UI supports a modal or choice dialog, use it; otherwise ask in chat and wait for the user's answer.
+- Write new page titles, headings, summaries, and index/log prose in the selected language unless the user explicitly asks for bilingual or mixed-language output.
+- Preserve original terms, quotes, names, code, and identifiers in their source language when needed for accuracy.
+- Record the selected language in frontmatter as `language: <value>`.
 
 ## Page types
 
@@ -137,6 +157,7 @@ Do not rewrite old entries except to correct formatting mistakes.
 
 Before writing wiki pages, prepare a page plan containing:
 
+- target wiki language and whether it was explicitly provided or user-selected after prompting;
 - selected raw sources;
 - proposed source pages;
 - proposed concept/workflow pages;

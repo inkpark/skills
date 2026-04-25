@@ -115,7 +115,7 @@ def check_portable_core(root: Path) -> None:
         raise ValidationError(f"SKILL.md core contains platform-specific implementation snippets: {banned}")
     assert_contains(
         text,
-        ["raw/", "wiki/", "graphify-out/", "references/wiki-schema.md", "references/graphify.md"],
+        ["raw/", "wiki/", "graphify-out/", "wiki language", "references/wiki-schema.md", "references/graphify.md"],
         "SKILL.md portable core",
     )
 
@@ -133,6 +133,8 @@ def check_references(root: Path) -> None:
     )
     graphify_text = read(refs_dir / "graphify.md")
     assert_contains(graphify_text, GRAPHIFY_REQUIRED_TERMS, "references/graphify.md")
+    schema_text = read(refs_dir / "wiki-schema.md")
+    assert_contains(schema_text, ["language:", "Language policy", "请选择或指定本次 wiki 使用的语种"], "references/wiki-schema.md")
     if "raw/" not in read(refs_dir / "graphifyignore-proposal.md"):
         raise ValidationError("graphifyignore proposal must mention raw/ policy")
 
@@ -159,6 +161,7 @@ def check_first_pass_page_plan(root: Path) -> None:
         raise ValidationError(f"raw source set changed; update page plan. expected={expected_raw}, actual={raw_files}")
 
     plan = read(root / "skills" / SKILL_NAME / "references" / "first-pass-page-plan.md")
+    assert_contains(plan, ["Wiki language", "language:"], "first-pass page plan")
     for raw_path, page_path in EXPECTED_RAW_TO_SOURCE_PAGE.items():
         assert_contains(plan, [raw_path, page_path], "first-pass page plan")
 
@@ -173,7 +176,7 @@ def check_samples(root: Path) -> None:
         text = read(samples_dir / name)
         if not text.startswith("---\n"):
             raise ValidationError(f"sample {name} lacks frontmatter")
-        assert_contains(text, [f"type: {expected_type}", "status: draft", "raw/", "updated:"], f"sample {name}")
+        assert_contains(text, [f"type: {expected_type}", "status: draft", "language:", "raw/", "updated:"], f"sample {name}")
 
 
 def check_graphify_out_empty(root: Path) -> None:

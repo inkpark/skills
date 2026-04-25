@@ -2,6 +2,7 @@
 title: "Example Concept"
 type: concept
 status: draft
+language: en
 sources:
   - "raw/example-source.md"
 tags: [llm-wiki]
