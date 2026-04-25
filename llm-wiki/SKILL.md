@@ -7,6 +7,8 @@ description: Maintain a reviewable LLM Wiki from immutable raw notes, including 
 
 Use this skill from any capable AI agent when the user asks to ingest notes into an LLM Wiki, maintain or query the wiki, lint wiki consistency, update wiki indexes/logs/cross-links, or refresh/consult a Graphify graph for the wiki.
 
+When the user invokes only `llm-wiki` or otherwise provides no additional task details, do not show a workflow menu. Treat the bare invocation as the default bootstrap/refresh pipeline: resolve the wiki language, generate a raw Graphify map, then generate or update the wiki from `raw/` with help from that map.
+
 ## Safety contract
 
 - Treat `raw/` as immutable source evidence: never edit, move, delete, normalize, or write generated files under it.
@@ -14,6 +16,7 @@ Use this skill from any capable AI agent when the user asks to ingest notes into
 - Treat `graphify-out/` as generated, reproducible graph output; use it to navigate and synthesize raw notes, but never cite it as canonical source content.
 - Do not install `graphifyy`, run `graphify`, call models/APIs, or generate a full wiki unless the user explicitly requests that execution step.
 - Before creating or updating `wiki/` pages, determine the target wiki language. If the user did not explicitly specify it in the current request or accepted page plan, open a short choice/input dialog when the agent UI supports it, or ask in chat, and wait for the user to choose or specify the language.
+- Remember the selected wiki language in `wiki/config.md` using `language: <value>`, and reuse it on later invocations unless the user overrides it.
 - Prefer small, reviewable wiki updates and record meaningful changes in `wiki/log.md`.
 
 ## Reference map
@@ -28,10 +31,25 @@ Read only the references needed for the current request:
 - `references/first-pass-page-plan.md` — initial page plan and sample style for the current `<knowledge-repo>` raw sources.
 - `references/graphifyignore-proposal.md` — documented ignore policy for any future root graph or audit mode.
 
+## Workflow: bare invocation
+
+Use this workflow when the user invokes the skill without any other instruction, for example just `llm-wiki`.
+
+1. Resolve the target wiki language:
+   - if the user specified a language in the current request, use it;
+   - otherwise read the remembered language from `wiki/config.md` when present;
+   - otherwise, if `wiki/index.md` or existing maintained pages have a consistent `language` value, reuse it and write it to `wiki/config.md`;
+   - otherwise ask: "请选择或指定本次 wiki 使用的语种（例如 zh-CN、en、bilingual 或其他）" and wait for the answer.
+2. If the user selected a language and `wiki/config.md` is absent or stale, create/update it before other wiki writes.
+3. Run the guarded raw-map Graphify workflow: read `raw/`, write `graphify-out/raw-map/`, and keep `raw/` immutable. A bare `llm-wiki` invocation counts as a request for this default raw-map refresh, but still do not install `graphifyy` or bypass local cost/network safeguards.
+4. Generate or update the wiki from `raw/`, using `graphify-out/raw-map/GRAPH_REPORT.md` as a navigation and clustering aid when available.
+5. Update `wiki/index.md` and append `wiki/log.md` with the language, graph refresh status, changed pages, and verification.
+6. If Graphify is unavailable or cannot run safely, continue the wiki generation/update directly from `raw/`, record that graph generation was skipped, and explain the blocker in the final response.
+
 ## Workflow: ingest plan
 
 1. Identify the requested source set. For new or large sets, list proposed wiki pages before writing.
-2. Determine the target wiki language before any wiki write. If it is not explicit, ask: "请选择或指定本次 wiki 使用的语种（例如 zh-CN、en、bilingual 或其他）" and do not proceed with wiki writes until the user answers.
+2. Determine the target wiki language before any wiki write. If it is not explicit, first reuse `wiki/config.md`; if no remembered language exists, ask: "请选择或指定本次 wiki 使用的语种（例如 zh-CN、en、bilingual 或其他）" and do not proceed with wiki writes until the user answers.
 3. Read selected `raw/*.md` files as evidence only; do not alter them.
 4. If an approved raw Graphify map exists under `graphify-out/raw-map/`, use it as a navigation and clustering aid before mapping raw sources; otherwise map directly from selected raw files.
 5. Map each raw source to at least one `wiki/sources/*.md` page and at most a small justified set of concept/workflow pages.

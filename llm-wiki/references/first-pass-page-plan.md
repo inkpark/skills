@@ -17,10 +17,13 @@ Target wiki language: `<ask the user if not explicit; examples: zh-CN, en, bilin
 
 Do not begin writing `wiki/` pages until the user has explicitly specified or selected this value. Record the selected value in each new maintained page's frontmatter as `language: <value>`.
 
+When the language is selected for the first time, add or update `wiki/config.md` so later bare `llm-wiki` invocations can reuse it without prompting again.
+
 ## Proposed wiki pages
 
 | Page | Type | Sources | Purpose |
 |---|---|---|---|
+| `wiki/config.md` | config | none | Remember wiki-level settings such as selected language. |
 | `wiki/index.md` | index | selected source set | Catalog maintained wiki pages and summaries. |
 | `wiki/log.md` | log | selected source set | Append-only record of ingests, queries, lints, and graph refreshes. |
 | `wiki/workflows/ingest.md` | workflow | skill | Define how agents transform raw notes into wiki pages. |

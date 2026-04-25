@@ -17,6 +17,7 @@ Never write into `raw/`. Do not treat `graphify-out/` as authoritative content.
 
 ```text
 wiki/
+  config.md                 # remembered wiki settings such as target language
   index.md                  # catalog of maintained wiki pages
   log.md                    # append-only maintenance log
   sources/                  # one page per raw source or tightly related source cluster
@@ -33,7 +34,7 @@ All maintained wiki pages should start with YAML frontmatter:
 ```yaml
 ---
 title: "Readable page title"
-type: source | concept | workflow | index | log
+type: source | concept | workflow | index | log | config
 status: draft | review | stable
 language: zh-CN
 sources:
@@ -64,10 +65,40 @@ Suggested prompt:
 Rules:
 
 - Do not infer the wiki language solely from the raw source language, repository locale, or current chat language.
+- Remember the selected language in `wiki/config.md` as `language: <value>` so later bare invocations can reuse it without asking again.
+- If `wiki/config.md` is absent, an agent may reuse a consistent `language` value found in `wiki/index.md` or maintained wiki pages, then write that value back to `wiki/config.md`.
 - If the agent UI supports a modal or choice dialog, use it; otherwise ask in chat and wait for the user's answer.
 - Write new page titles, headings, summaries, and index/log prose in the selected language unless the user explicitly asks for bilingual or mixed-language output.
 - Preserve original terms, quotes, names, code, and identifiers in their source language when needed for accuracy.
 - Record the selected language in frontmatter as `language: <value>`.
+
+## Config page
+
+`wiki/config.md` remembers wiki-level settings and should be small and reviewable:
+
+```yaml
+---
+title: "LLM Wiki Config"
+type: config
+status: stable
+language: zh-CN
+sources: []
+tags: [llm-wiki]
+updated: YYYY-MM-DD
+---
+```
+
+Body:
+
+```markdown
+# LLM Wiki Config
+
+## Settings
+
+- Language: zh-CN
+```
+
+Agents may create or update this page when the user selects a wiki language. Do not store secrets, tokens, or raw source content in this file.
 
 ## Page types
 
@@ -146,6 +177,10 @@ Guidelines:
 
 Do not rewrite old entries except to correct formatting mistakes.
 
+### `config`
+
+`wiki/config.md` stores durable wiki preferences such as the selected language. It is not source evidence and should not replace per-page provenance.
+
 ## Link conventions
 
 - Prefer relative Markdown links such as `../concepts/agent-context-memory.md` when writing standard Markdown.
@@ -158,6 +193,7 @@ Do not rewrite old entries except to correct formatting mistakes.
 Before writing wiki pages, prepare a page plan containing:
 
 - target wiki language and whether it was explicitly provided or user-selected after prompting;
+- whether the language was read from or written to `wiki/config.md`;
 - selected raw sources;
 - proposed source pages;
 - proposed concept/workflow pages;

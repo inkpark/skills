@@ -134,7 +134,11 @@ def check_references(root: Path) -> None:
     graphify_text = read(refs_dir / "graphify.md")
     assert_contains(graphify_text, GRAPHIFY_REQUIRED_TERMS, "references/graphify.md")
     schema_text = read(refs_dir / "wiki-schema.md")
-    assert_contains(schema_text, ["language:", "Language policy", "请选择或指定本次 wiki 使用的语种"], "references/wiki-schema.md")
+    assert_contains(
+        schema_text,
+        ["language:", "Language policy", "wiki/config.md", "type: config", "请选择或指定本次 wiki 使用的语种"],
+        "references/wiki-schema.md",
+    )
     if "raw/" not in read(refs_dir / "graphifyignore-proposal.md"):
         raise ValidationError("graphifyignore proposal must mention raw/ policy")
 
@@ -161,7 +165,7 @@ def check_first_pass_page_plan(root: Path) -> None:
         raise ValidationError(f"raw source set changed; update page plan. expected={expected_raw}, actual={raw_files}")
 
     plan = read(root / "skills" / SKILL_NAME / "references" / "first-pass-page-plan.md")
-    assert_contains(plan, ["Wiki language", "language:"], "first-pass page plan")
+    assert_contains(plan, ["Wiki language", "wiki/config.md", "language:"], "first-pass page plan")
     for raw_path, page_path in EXPECTED_RAW_TO_SOURCE_PAGE.items():
         assert_contains(plan, [raw_path, page_path], "first-pass page plan")
 
