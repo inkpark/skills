@@ -1,6 +1,6 @@
 ---
 name: llm-wiki
-description: Maintain a reviewable LLM Wiki from immutable raw notes, including ingest planning, querying, linting, and guarded Graphify graph refreshes for AI coding agents and assistants such as Codex, Claude Code, or any agent that can read local Markdown instructions.
+description: Maintain a reviewable LLM Wiki from immutable raw notes, including ingest planning, querying, linting, and guarded raw Graphify maps that help agents generate better wiki pages.
 ---
 
 # LLM Wiki
@@ -11,7 +11,7 @@ Use this skill from any capable AI agent when the user asks to ingest notes into
 
 - Treat `raw/` as immutable source evidence: never edit, move, delete, normalize, or write generated files under it.
 - Treat `wiki/` as the reviewable compiled Markdown layer.
-- Treat `graphify-out/` as generated, reproducible graph output; never cite it as canonical source content.
+- Treat `graphify-out/` as generated, reproducible graph output; use it to navigate and synthesize raw notes, but never cite it as canonical source content.
 - Do not install `graphifyy`, run `graphify`, call models/APIs, or generate a full wiki unless the user explicitly requests that execution step.
 - Prefer small, reviewable wiki updates and record meaningful changes in `wiki/log.md`.
 
@@ -31,15 +31,16 @@ Read only the references needed for the current request:
 
 1. Identify the requested source set. For new or large sets, list proposed wiki pages before writing.
 2. Read selected `raw/*.md` files as evidence only; do not alter them.
-3. Map each raw source to at least one `wiki/sources/*.md` page and at most a small justified set of concept/workflow pages.
-4. Draft source pages with provenance in frontmatter and concise claim summaries.
-5. Draft concept/workflow pages only when they synthesize multiple sources or encode reusable procedure.
-6. Update `wiki/index.md` and append an entry to `wiki/log.md` for accepted writes.
-7. Stop before full wiki generation unless execution scope explicitly allows it.
+3. If an approved raw Graphify map exists under `graphify-out/raw-map/`, use it as a navigation and clustering aid before mapping raw sources; otherwise map directly from selected raw files.
+4. Map each raw source to at least one `wiki/sources/*.md` page and at most a small justified set of concept/workflow pages.
+5. Draft source pages with provenance in frontmatter and concise claim summaries.
+6. Draft concept/workflow pages only when they synthesize multiple sources or encode reusable procedure.
+7. Update `wiki/index.md` and append an entry to `wiki/log.md` for accepted writes.
+8. Stop before full wiki generation unless execution scope explicitly allows it.
 
 ## Workflow: query
 
-1. Prefer `wiki/index.md`, relevant `wiki/**/*.md` pages, and `graphify-out/wiki/GRAPH_REPORT.md` when present.
+1. Prefer `wiki/index.md` and relevant `wiki/**/*.md` pages for answered/cited knowledge. Use `graphify-out/raw-map/GRAPH_REPORT.md` when present as a navigation and synthesis aid for raw-backed gaps; use `graphify-out/wiki/GRAPH_REPORT.md` only to navigate an existing wiki.
 2. Cite wiki pages and their raw provenance; do not cite Graphify output as source of truth.
 3. After answering, decide whether the result contains durable knowledge: a reusable synthesis, comparison, decision, source map, or workflow clarification that future queries should find.
 4. If durable knowledge was produced, do not leave it only in chat history:
@@ -65,13 +66,14 @@ Report proposed fixes before large rewrites.
 
 1. Load `references/graphify.md` before any graph action.
 2. Confirm Graphify availability with `graphify --help` only; do not install or run graph builds without explicit approval.
-3. Default mode is wiki-only: read `wiki/`, write `graphify-out/wiki/`.
-4. Raw-audit mode is explicit and isolated: read `raw/`, write `graphify-out/raw-audit/`.
-5. Never use a mixed/root graph by default. It requires a validated ignore policy and explicit confirmation.
-6. After an approved refresh, summarize `GRAPH_REPORT.md` for navigation and append the refresh to `wiki/log.md`.
+3. Default planning mode is raw-map: read `raw/`, write `graphify-out/raw-map/`, then use that generated graph to cluster sources and draft better `wiki/` pages.
+4. Wiki-refresh mode is secondary: read `wiki/`, write `graphify-out/wiki/` when the maintained wiki already exists and needs navigation review.
+5. Raw-audit mode is explicit and isolated: read `raw/`, write `graphify-out/raw-audit/` for source coverage or audit tasks beyond normal wiki generation.
+6. Never use a mixed/root graph by default. It requires a validated ignore policy and explicit confirmation.
+7. After an approved refresh, summarize `GRAPH_REPORT.md` as a non-canonical navigation aid and append the refresh to `wiki/log.md` when wiki logging is in scope.
 
 ## Optional helpers
 
 - `scripts/install_skill.py --help` and `--dry-run` show Codex, Claude Code, or generic agent install targets without writing.
 - `scripts/install_skill.py --dry-run --platform generic-agent --target <agent-skill-dir>` previews a copy/symlink install for other agents.
-- `scripts/run_graphify.py --help` and `--dry-run --mode wiki-only` validate intended paths without running Graphify; run it from the knowledge repository root or pass `--repo-root <knowledge-repo>` when the skill is installed elsewhere.
+- `scripts/run_graphify.py --help` and `--dry-run --mode raw-map` validate intended raw-to-graph paths without running Graphify; run it from the knowledge repository root or pass `--repo-root <knowledge-repo>` when the skill is installed elsewhere.

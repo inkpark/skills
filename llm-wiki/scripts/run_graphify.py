@@ -16,7 +16,8 @@ import subprocess
 from pathlib import Path
 
 MODES = {
-    "wiki-only": {"input": "wiki", "output": "graphify-out/wiki"},
+    "raw-map": {"input": "raw", "output": "graphify-out/raw-map"},
+    "wiki-refresh": {"input": "wiki", "output": "graphify-out/wiki"},
     "raw-audit": {"input": "raw", "output": "graphify-out/raw-audit"},
 }
 
@@ -138,7 +139,7 @@ def run(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--mode", choices=sorted(MODES), default="wiki-only")
+    parser.add_argument("--mode", choices=sorted(MODES), default="raw-map")
     parser.add_argument(
         "--repo-root",
         help=(
@@ -150,7 +151,7 @@ def main() -> None:
     parser.add_argument("--execute", action="store_true", help="Run Graphify after explicit user approval")
     parser.add_argument("--confirm-cost-network", action="store_true", help="Required with --execute to acknowledge dependency/network/model cost risk")
     parser.add_argument("--replace-existing", action="store_true", help="Allow writing into a non-empty output directory during a real run")
-    parser.add_argument("--allow-raw-audit", action="store_true", help="Required with --mode raw-audit")
+    parser.add_argument("--allow-raw-audit", action="store_true", help="Required with --mode raw-audit; raw-map is the normal raw-to-wiki planning graph mode")
     args = parser.parse_args()
     run(args)
 

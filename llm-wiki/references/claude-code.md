@@ -70,7 +70,7 @@ Claude Code should apply `llm-wiki` when the user asks to maintain or query the 
 - ingest selected raw notes into reviewable wiki pages;
 - update indexes, logs, source summaries, concept pages, or workflow pages;
 - lint for stale summaries, missing provenance, duplicate concepts, contradictions, or over-fragmentation;
-- generate or consult a Graphify graph.
+- generate or consult the raw Graphify map that helps draft or maintain wiki pages.
 
 For Graphify tasks, read `references/graphify.md` first. For page shape, read `references/wiki-schema.md` first.
 

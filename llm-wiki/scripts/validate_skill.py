@@ -33,6 +33,7 @@ GRAPHIFY_REQUIRED_TERMS = (
     "graph.html",
     "graph.json",
     "GRAPH_REPORT.md",
+    "graphify-out/raw-map",
     "graphify-out/wiki",
     "graphify-out/raw-audit",
     "network/API/cost",
@@ -204,9 +205,8 @@ def check_helper_dry_runs(root: Path) -> None:
         ],
         [sys.executable, "skills/llm-wiki/scripts/run_graphify.py", "--help"],
     ]
-    if (root / "wiki").is_dir():
-        commands.append([sys.executable, "skills/llm-wiki/scripts/run_graphify.py", "--dry-run", "--mode", "wiki-only"])
     if (root / "raw").is_dir():
+        commands.append([sys.executable, "skills/llm-wiki/scripts/run_graphify.py", "--dry-run", "--mode", "raw-map"])
         commands.append(
             [
                 sys.executable,
@@ -217,6 +217,8 @@ def check_helper_dry_runs(root: Path) -> None:
                 "--allow-raw-audit",
             ]
         )
+    if (root / "wiki").is_dir():
+        commands.append([sys.executable, "skills/llm-wiki/scripts/run_graphify.py", "--dry-run", "--mode", "wiki-refresh"])
     for command in commands:
         output = run_command(command, root)
         joined = " ".join(command)
@@ -241,7 +243,7 @@ def check_helper_dry_runs(root: Path) -> None:
         helper = root / "skills" / SKILL_NAME / "scripts" / "run_graphify.py"
 
         cwd_discovery = run_command(
-            [sys.executable, str(helper), "--dry-run", "--mode", "wiki-only"],
+            [sys.executable, str(helper), "--dry-run", "--mode", "raw-map"],
             knowledge_root / "nested" / "cwd",
         )
         if f"repo_root: {knowledge_root}" not in cwd_discovery or "graphify not executed" not in cwd_discovery:

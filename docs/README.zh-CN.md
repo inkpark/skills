@@ -8,7 +8,7 @@ English documentation: [README.md](../README.md)。
 
 这些技能帮助 Agent 捕获、组织、查询和维护可复用知识。
 
-- llm-wiki — 从不可变的原始笔记维护可审阅的 Markdown LLM Wiki，包含 ingest、query、lint，以及受保护的 Graphify 工作流。
+- llm-wiki — 从不可变的原始笔记维护可审阅的 Markdown LLM Wiki，并用受保护的 raw Graphify 图谱辅助生成 wiki。
 
   ```bash
   npx skills@latest add inkpark/skills/llm-wiki

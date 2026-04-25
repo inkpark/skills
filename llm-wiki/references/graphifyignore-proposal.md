@@ -24,7 +24,7 @@ graphify-out/
 **/__pycache__/
 *.pyc
 
-# Immutable raw source notes (root graphs should default to wiki-only content)
+# Immutable raw source notes (root graphs should not include raw implicitly)
 raw/
 
 # Dependency/build outputs
@@ -35,4 +35,4 @@ build/
 venv/
 ```
 
-Generated files such as manifests, cost reports, caches, and intermediate extraction artifacts should remain outside canonical wiki content. Keep `graphify-out/wiki/GRAPH_REPORT.md` only as navigation aid, not as source evidence. Excluding `raw/` protects immutable source notes during any explicitly approved root graph; use the separate raw-audit workflow when raw source graphing is intentionally requested.
+Generated files such as manifests, cost reports, caches, and intermediate extraction artifacts should remain outside canonical wiki content. Keep `graphify-out/raw-map/GRAPH_REPORT.md` and `graphify-out/wiki/GRAPH_REPORT.md` only as navigation aids, not as source evidence. Excluding `raw/` protects against accidental mixed/root graphing; when raw graphing is intended for wiki generation, run the separate raw-map workflow directly on `raw/` with isolated output.

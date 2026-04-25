@@ -23,7 +23,7 @@ Codex skills use a self-contained folder with a required `SKILL.md` file. `SKILL
 ```yaml
 ---
 name: llm-wiki
-description: Maintain the LLM Wiki in <knowledge-repo> from immutable raw notes through reviewed wiki pages and optional Graphify graph outputs.
+description: Maintain the LLM Wiki in <knowledge-repo> from immutable raw notes through reviewed wiki pages, using optional raw Graphify maps to improve generation.
 ---
 ```
 
@@ -77,7 +77,7 @@ Codex should use `llm-wiki` when a user asks to:
 - query or maintain `wiki/`;
 - lint wiki consistency;
 - update `wiki/index.md` or `wiki/log.md`;
-- refresh or consult the Graphify output under `graphify-out/wiki/`.
+- generate or consult the raw Graphify map under `graphify-out/raw-map/` to improve wiki generation; refresh `graphify-out/wiki/` only for existing-wiki navigation review.
 
 When the task involves Graphify, read `references/graphify.md` before proposing or running commands.
 
