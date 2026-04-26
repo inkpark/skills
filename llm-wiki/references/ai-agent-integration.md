@@ -11,6 +11,8 @@ The skill is portable when the target agent can:
 - preserve the safety contract from `SKILL.md`, especially `raw/` immutability;
 - avoid package installs and model/API calls unless explicitly requested.
 
+If the user does not explicitly specify a knowledge repository path, the agent should use its current session working directory as the knowledge repository root. Do not derive the root from the installed skill location.
+
 Do not fork the workflow for each agent. Keep `skills/llm-wiki/SKILL.md` as the canonical source and use agent-specific files only as short pointers or install targets.
 
 ## Integration patterns

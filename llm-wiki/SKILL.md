@@ -9,10 +9,13 @@ Use this skill from any capable AI agent when the user asks to ingest notes into
 
 When the user invokes only `llm-wiki` or otherwise provides no additional task details, do not show a workflow menu. Treat the bare invocation as the default bootstrap/refresh pipeline: resolve the wiki language, then generate or update the wiki directly from `raw/`.
 
+If the user does not explicitly specify a working directory or knowledge repository path, operate on the current session working directory. Resolve `raw/`, `wiki/`, and all relative links from that directory.
+
 ## Safety contract
 
 - Treat `raw/` as immutable source evidence: never edit, move, delete, normalize, or write generated files under it.
 - Treat `wiki/` as the reviewable compiled Markdown layer.
+- Treat the session working directory as the knowledge repository root unless the user explicitly provides another directory.
 - Every generated or updated wiki page that is derived from raw material must link to its corresponding `raw/` file(s), not only list them in frontmatter.
 - Do not install packages, call models/APIs, or generate a full wiki unless the user explicitly requests that execution step.
 - Before creating or updating `wiki/` pages, determine the target wiki language. If the user did not explicitly specify it in the current request or accepted page plan, open a short choice/input dialog when the agent UI supports it, or ask in chat, and wait for the user to choose or specify the language.
@@ -39,9 +42,10 @@ Use this workflow when the user invokes the skill without any other instruction,
    - otherwise, if `wiki/index.md` or existing maintained pages have a consistent `language` value, reuse it and write it to `wiki/config.md`;
    - otherwise ask: "请选择或指定本次 wiki 使用的语种（例如 zh-CN、en、bilingual 或其他）" and wait for the answer.
 2. If the user selected a language and `wiki/config.md` is absent or stale, create/update it before other wiki writes.
-3. Inventory `raw/*.md` and existing `wiki/**/*.md` coverage without altering `raw/`.
-4. Generate or update the wiki directly from `raw/`, keeping the first pass small and reviewable unless the user explicitly requested full generation.
-5. Update `wiki/index.md` and append `wiki/log.md` with the language, changed pages, raw coverage, and verification.
+3. Use the user-specified working directory when provided; otherwise use the current session working directory as the knowledge repository root.
+4. Inventory `raw/*.md` and existing `wiki/**/*.md` coverage without altering `raw/`.
+5. Generate or update the wiki directly from `raw/`, keeping the first pass small and reviewable unless the user explicitly requested full generation.
+6. Update `wiki/index.md` and append `wiki/log.md` with the language, changed pages, raw coverage, and verification.
 
 ## Workflow: ingest plan
 

@@ -12,6 +12,17 @@ skills/llm-wiki canonical skill package and workflow documentation
 
 Never write into `raw/`.
 
+## Repository root resolution
+
+When the user does not explicitly provide a working directory or knowledge repository path, the current session working directory is the knowledge repository root.
+
+Rules:
+
+- Resolve `raw/`, `wiki/`, `wiki/config.md`, `wiki/index.md`, and `wiki/log.md` relative to the session working directory by default.
+- If the user explicitly supplies another directory, use that directory as the knowledge repository root for the current task.
+- Do not infer a different root from the installed skill location, user home directory, or parent folders unless the user asks for that.
+- Raw provenance paths in frontmatter should remain relative to the selected knowledge repository root.
+
 ## Directory plan
 
 ```text

@@ -99,7 +99,7 @@ def check_portable_core(root: Path) -> None:
         raise ValidationError(f"SKILL.md core contains platform-specific implementation snippets: {banned}")
     assert_contains(
         text,
-        ["raw/", "wiki/", "wiki language", "raw file", "references/wiki-schema.md"],
+        ["raw/", "wiki/", "session working directory", "wiki language", "raw file", "references/wiki-schema.md"],
         "SKILL.md portable core",
     )
 
@@ -118,7 +118,16 @@ def check_references(root: Path) -> None:
     schema_text = read(refs_dir / "wiki-schema.md")
     assert_contains(
         schema_text,
-        ["language:", "Language policy", "wiki/config.md", "type: config", "clickable raw file links", "请选择或指定本次 wiki 使用的语种"],
+        [
+            "language:",
+            "Repository root resolution",
+            "session working directory",
+            "Language policy",
+            "wiki/config.md",
+            "type: config",
+            "clickable raw file links",
+            "请选择或指定本次 wiki 使用的语种",
+        ],
         "references/wiki-schema.md",
     )
 
