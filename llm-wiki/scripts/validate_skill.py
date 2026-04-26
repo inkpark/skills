@@ -124,6 +124,8 @@ def check_references(root: Path) -> None:
             "session working directory",
             "Language policy",
             "wiki/config.md",
+            "wiki/manifest.json",
+            "batch_size",
             "type: config",
             "clickable raw file links",
             "请选择或指定本次 wiki 使用的语种",
@@ -154,7 +156,7 @@ def check_first_pass_page_plan(root: Path) -> None:
         raise ValidationError(f"raw source set changed; update page plan. expected={expected_raw}, actual={raw_files}")
 
     plan = read(root / "skills" / SKILL_NAME / "references" / "first-pass-page-plan.md")
-    assert_contains(plan, ["Wiki language", "wiki/config.md", "language:", "](../../raw/"], "first-pass page plan")
+    assert_contains(plan, ["Wiki language", "wiki/config.md", "wiki/manifest.json", "batch size", "language:", "](../../raw/"], "first-pass page plan")
     for raw_path, page_path in EXPECTED_RAW_TO_SOURCE_PAGE.items():
         assert_contains(plan, [raw_path, page_path], "first-pass page plan")
 

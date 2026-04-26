@@ -28,6 +28,7 @@ Rules:
 ```text
 wiki/
   config.md                 # remembered wiki settings such as target language
+  manifest.json             # raw file hashes, source-page mapping, and ingest status
   index.md                  # catalog of maintained wiki pages
   log.md                    # append-only maintenance log
   sources/                  # one page per raw source or tightly related source cluster
@@ -110,6 +111,47 @@ Body:
 ```
 
 Agents may create or update this page when the user selects a wiki language. Do not store secrets, tokens, or raw source content in this file.
+
+## Manifest
+
+`wiki/manifest.json` enables incremental generation for large raw sets. It should be updated before and after each ingest batch.
+
+Recommended shape:
+
+```json
+{
+  "schema_version": 1,
+  "language": "zh-CN",
+  "batch_size": 20,
+  "updated": "YYYY-MM-DD",
+  "raw": {
+    "raw/example-source.md": {
+      "sha256": "<hex>",
+      "status": "done",
+      "source_page": "wiki/sources/example-source.md",
+      "last_ingested": "YYYY-MM-DD",
+      "notes": ""
+    }
+  }
+}
+```
+
+Status values:
+
+- `new`: raw file is not represented yet.
+- `changed`: raw hash differs from the last recorded hash.
+- `unchanged`: raw hash matches and the source page exists.
+- `missing-page`: manifest entry exists but the source page is missing.
+- `done`: raw file was processed and verified for the selected language.
+- `skipped`: raw file is intentionally not ingested; `notes` should explain why.
+
+Rules:
+
+- Use paths relative to the selected knowledge repository root.
+- Prefer SHA-256 hashes when local tooling is available.
+- Do not store raw source text in the manifest.
+- Treat the manifest as an index, not as source evidence.
+- For large raw sets, process pending entries in batches and update the manifest after every batch.
 
 ## Page types
 
@@ -209,6 +251,8 @@ Before writing wiki pages, prepare a page plan containing:
 - target wiki language and whether it was explicitly provided or user-selected after prompting;
 - whether the language was read from or written to `wiki/config.md`;
 - selected raw sources;
+- manifest status for selected raw sources (`new`, `changed`, `missing-page`, etc.);
+- batch size and whether more raw files remain after the current batch;
 - proposed source pages;
 - proposed concept/workflow pages;
 - expected index/log updates;
@@ -226,3 +270,4 @@ A wiki lint should check:
 - no page is orphaned from `wiki/index.md` unless intentionally draft-only;
 - concept pages are not duplicative or over-fragmented;
 - `wiki/log.md` records significant maintenance actions;
+- `wiki/manifest.json` exists for large raw sets and accurately records raw hashes, source-page targets, status, language, and batch size;
