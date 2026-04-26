@@ -49,6 +49,7 @@ Rules:
 - `language` is required for new maintained pages and records the user-selected wiki language, for example `zh-CN`, `en`, `ja`, or `bilingual`.
 - `sources` is required for `source` and `concept` pages; it may be empty or omitted for generic workflow pages.
 - Use paths relative to the knowledge repository root for raw provenance.
+- Frontmatter provenance is not enough: the page body must include clickable Markdown links to each relevant raw file.
 - Keep tags sparse and reusable.
 
 ## Language policy
@@ -108,15 +109,17 @@ Purpose: summarize one raw source without replacing it.
 Required sections:
 
 1. `# <title>`
-2. `## Summary`
-3. `## Key claims`
-4. `## Useful details`
-5. `## Links`
+2. `## Raw source`
+3. `## Summary`
+4. `## Key claims`
+5. `## Useful details`
+6. `## Links`
 
 Guidelines:
 
 - Keep summaries concise and evidence-bound.
 - Preserve uncertainty or context when the raw source is fragmentary.
+- In `## Raw source`, include a direct Markdown link to the corresponding raw file, for example `[raw/example.md](../../raw/example.md)` from `wiki/sources/example.md`.
 - Link to concept/workflow pages with relative or Obsidian-style links that remain readable in Markdown.
 
 ### `concept`
@@ -136,6 +139,7 @@ Guidelines:
 - Create concept pages only when they reduce duplication across multiple source pages.
 - Avoid one-page-per-term fragmentation.
 - Keep raw provenance in frontmatter and cite source pages in the body.
+- In `## Evidence`, include links to relevant source pages and direct Markdown links to the raw files that support the concept.
 
 ### `workflow`
 
@@ -185,7 +189,7 @@ Do not rewrite old entries except to correct formatting mistakes.
 - Prefer relative Markdown links such as `../concepts/agent-context-memory.md` when writing standard Markdown.
 - Obsidian-style links are acceptable in human-facing notes when they stay understandable, for example `[[../concepts/agent-context-memory]]`.
 - Keep links within `wiki/` for maintained wiki navigation.
-- Refer to raw files in provenance lists and evidence sections, not as generated copies.
+- Link to raw files in source pages and evidence sections; never copy raw content into generated files as a substitute for linking.
 
 ## Ingest guardrails
 
@@ -207,7 +211,7 @@ A wiki lint should check:
 
 - every `raw/*.md` source is represented by at least one planned or existing source page;
 - no maintained page has missing required frontmatter;
-- source/concept pages have raw provenance;
+- source/concept pages have raw provenance and clickable raw file links in the body;
 - no page is orphaned from `wiki/index.md` unless intentionally draft-only;
 - concept pages are not duplicative or over-fragmented;
 - `wiki/log.md` records significant maintenance actions;

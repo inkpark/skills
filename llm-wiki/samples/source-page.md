@@ -11,6 +11,10 @@ updated: YYYY-MM-DD
 
 # Example Source Summary
 
+## Raw source
+
+- [raw/example-source.md](../../raw/example-source.md)
+
 ## Summary
 
 This source page summarizes one immutable raw source without replacing it. Keep the summary concise, evidence-bound, and useful for later queries.

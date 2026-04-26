@@ -21,7 +21,8 @@ In a maintained knowledge repository, `raw/` preserves source evidence, `wiki/` 
 
 ## Evidence
 
-- Source summary planned for `wiki/sources/example-source.md`.
+- Source summary planned for [Example Source Summary](../sources/example-source.md).
+- Raw provenance: [raw/example-source.md](../../raw/example-source.md).
 
 ## Related
 

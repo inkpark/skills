@@ -99,7 +99,7 @@ def check_portable_core(root: Path) -> None:
         raise ValidationError(f"SKILL.md core contains platform-specific implementation snippets: {banned}")
     assert_contains(
         text,
-        ["raw/", "wiki/", "wiki language", "references/wiki-schema.md"],
+        ["raw/", "wiki/", "wiki language", "raw file", "references/wiki-schema.md"],
         "SKILL.md portable core",
     )
 
@@ -118,7 +118,7 @@ def check_references(root: Path) -> None:
     schema_text = read(refs_dir / "wiki-schema.md")
     assert_contains(
         schema_text,
-        ["language:", "Language policy", "wiki/config.md", "type: config", "请选择或指定本次 wiki 使用的语种"],
+        ["language:", "Language policy", "wiki/config.md", "type: config", "clickable raw file links", "请选择或指定本次 wiki 使用的语种"],
         "references/wiki-schema.md",
     )
 
@@ -145,7 +145,7 @@ def check_first_pass_page_plan(root: Path) -> None:
         raise ValidationError(f"raw source set changed; update page plan. expected={expected_raw}, actual={raw_files}")
 
     plan = read(root / "skills" / SKILL_NAME / "references" / "first-pass-page-plan.md")
-    assert_contains(plan, ["Wiki language", "wiki/config.md", "language:"], "first-pass page plan")
+    assert_contains(plan, ["Wiki language", "wiki/config.md", "language:", "](../../raw/"], "first-pass page plan")
     for raw_path, page_path in EXPECTED_RAW_TO_SOURCE_PAGE.items():
         assert_contains(plan, [raw_path, page_path], "first-pass page plan")
 
@@ -160,7 +160,7 @@ def check_samples(root: Path) -> None:
         text = read(samples_dir / name)
         if not text.startswith("---\n"):
             raise ValidationError(f"sample {name} lacks frontmatter")
-        assert_contains(text, [f"type: {expected_type}", "status: draft", "language:", "raw/", "updated:"], f"sample {name}")
+        assert_contains(text, [f"type: {expected_type}", "status: draft", "language:", "raw/", "](../../raw/", "updated:"], f"sample {name}")
 
 
 def check_no_generated_outputs(root: Path) -> None:

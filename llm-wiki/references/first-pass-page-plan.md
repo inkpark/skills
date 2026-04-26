@@ -49,6 +49,10 @@ updated: YYYY-MM-DD
 
 # Example Source Summary
 
+## Raw source
+
+- [raw/example-source-a.md](../../raw/example-source-a.md)
+
 ## Summary
 
 Summarize the source concisely and keep claims tied to the raw provenance.
@@ -95,7 +99,7 @@ Explain why the concept helps the knowledge repository answer future questions o
 
 ## Evidence
 
-- Cite source pages and their raw provenance rather than generated graph output.
+- Cite source pages and their raw provenance, including direct raw links such as [raw/example-source-a.md](../../raw/example-source-a.md).
 
 ## Related
 

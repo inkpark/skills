@@ -13,6 +13,7 @@ When the user invokes only `llm-wiki` or otherwise provides no additional task d
 
 - Treat `raw/` as immutable source evidence: never edit, move, delete, normalize, or write generated files under it.
 - Treat `wiki/` as the reviewable compiled Markdown layer.
+- Every generated or updated wiki page that is derived from raw material must link to its corresponding `raw/` file(s), not only list them in frontmatter.
 - Do not install packages, call models/APIs, or generate a full wiki unless the user explicitly requests that execution step.
 - Before creating or updating `wiki/` pages, determine the target wiki language. If the user did not explicitly specify it in the current request or accepted page plan, open a short choice/input dialog when the agent UI supports it, or ask in chat, and wait for the user to choose or specify the language.
 - Remember the selected wiki language in `wiki/config.md` using `language: <value>`, and reuse it on later invocations unless the user overrides it.
@@ -48,8 +49,8 @@ Use this workflow when the user invokes the skill without any other instruction,
 2. Determine the target wiki language before any wiki write. If it is not explicit, first reuse `wiki/config.md`; if no remembered language exists, ask: "请选择或指定本次 wiki 使用的语种（例如 zh-CN、en、bilingual 或其他）" and do not proceed with wiki writes until the user answers.
 3. Read selected `raw/*.md` files as evidence only; do not alter them.
 4. Map each raw source to at least one `wiki/sources/*.md` page and at most a small justified set of concept/workflow pages.
-5. Draft source pages in the chosen wiki language, with provenance and `language` in frontmatter plus concise claim summaries.
-6. Draft concept/workflow pages in the chosen wiki language only when they synthesize multiple sources or encode reusable procedure.
+5. Draft source pages in the chosen wiki language, with provenance and `language` in frontmatter, concise claim summaries, and explicit Markdown links to the corresponding raw file(s).
+6. Draft concept/workflow pages in the chosen wiki language only when they synthesize multiple sources or encode reusable procedure; concept pages must link to the relevant source pages and raw file(s).
 7. Update `wiki/index.md` and append an entry to `wiki/log.md` for accepted writes.
 8. Stop before full wiki generation unless execution scope explicitly allows it.
 
