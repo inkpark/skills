@@ -23,7 +23,7 @@ Codex skills use a self-contained folder with a required `SKILL.md` file. `SKILL
 ```yaml
 ---
 name: llm-wiki
-description: Maintain the LLM Wiki in <knowledge-repo> from immutable raw notes through reviewed wiki pages, using optional raw Graphify maps to improve generation.
+description: Maintain the LLM Wiki in <knowledge-repo> from immutable raw notes through reviewed wiki pages.
 ---
 ```
 
@@ -62,7 +62,7 @@ python3 skills/llm-wiki/scripts/install_skill.py --help
 python3 skills/llm-wiki/scripts/install_skill.py --dry-run --platform codex
 ```
 
-A dry-run must not create `.codex/`, write user-level files, install packages, or run Graphify. It should print at least:
+A dry-run must not create `.codex/`, write user-level files, install packages, or write wiki content. It should print at least:
 
 - canonical source path;
 - target Codex skill path;
@@ -77,19 +77,17 @@ Codex should use `llm-wiki` when a user asks to:
 - query or maintain `wiki/`;
 - lint wiki consistency;
 - update `wiki/index.md` or `wiki/log.md`;
-- generate or consult the raw Graphify map under `graphify-out/raw-map/` to improve wiki generation; refresh `graphify-out/wiki/` only for existing-wiki navigation review.
-
-When the task involves Graphify, read `references/graphify.md` before proposing or running commands.
+- update cross-links, source summaries, concept pages, or workflow pages.
 
 When the task involves page structure, read `references/wiki-schema.md` before creating wiki files.
 
 ## Codex-specific guardrails
 
 - Treat `<knowledge-repo>/raw/` as read-only even if filesystem permissions allow writes.
-- Do not run package installs or real Graphify commands from an automatic skill trigger.
+- Do not run package installs from an automatic skill trigger.
 - For current-date or external command behavior, verify with local `--help` or official docs rather than relying on stale memory.
 - Prefer local validation commands and dry-runs over network operations.
-- Keep citations in answers tied to `wiki/` pages and raw provenance, not to generated Graphify summaries alone.
+- Keep citations in answers tied to `wiki/` pages and raw provenance.
 
 ## Post-install sanity check
 

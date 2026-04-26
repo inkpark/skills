@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Validate the portable llm-wiki skill package without side effects.
 
-This checker is intentionally stdlib-only and dry-run-only. It never imports or
-runs Graphify, never installs packages, and never writes outside temporary
-directories created for validation.
+This checker is intentionally stdlib-only and dry-run-only. It never installs
+packages and never writes outside temporary directories created for validation.
 """
 from __future__ import annotations
 
@@ -11,14 +10,12 @@ import argparse
 import re
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 from typing import Iterable
 
 SKILL_NAME = "llm-wiki"
 REQUIRED_REFS = {
     "wiki-schema.md",
-    "graphify.md",
     "ai-agent-integration.md",
     "codex.md",
     "claude-code.md",
@@ -27,24 +24,11 @@ EXPECTED_RAW_TO_SOURCE_PAGE = {
     "raw/example-source-a.md": "wiki/sources/example-source-a.md",
     "raw/example-source-b.md": "wiki/sources/example-source-b.md",
 }
-GRAPHIFY_REQUIRED_TERMS = (
-    "graphifyy",
-    "graphify",
-    "graph.html",
-    "graph.json",
-    "GRAPH_REPORT.md",
-    "graphify-out/raw-map",
-    "graphify-out/wiki",
-    "graphify-out/raw-audit",
-    "network/API/cost",
-)
 BANNED_SKILL_CORE_SNIPPETS = (
     "~/.codex",
     "~/.claude",
     ".codex/skills",
     ".claude/skills",
-    "graphify codex install",
-    "graphify claude install",
 )
 BANNED_PROJECT_SPECIFIC_SNIPPETS = (
     "/mnt/d/" + "notes",
@@ -115,7 +99,7 @@ def check_portable_core(root: Path) -> None:
         raise ValidationError(f"SKILL.md core contains platform-specific implementation snippets: {banned}")
     assert_contains(
         text,
-        ["raw/", "wiki/", "graphify-out/", "wiki language", "references/wiki-schema.md", "references/graphify.md"],
+        ["raw/", "wiki/", "wiki language", "references/wiki-schema.md"],
         "SKILL.md portable core",
     )
 
@@ -131,16 +115,12 @@ def check_references(root: Path) -> None:
         ["generic-agent", "LLM_WIKI_SKILL_TARGET", "AI_AGENT_SKILL_TARGET", "Pointer fallback"],
         "references/ai-agent-integration.md",
     )
-    graphify_text = read(refs_dir / "graphify.md")
-    assert_contains(graphify_text, GRAPHIFY_REQUIRED_TERMS, "references/graphify.md")
     schema_text = read(refs_dir / "wiki-schema.md")
     assert_contains(
         schema_text,
         ["language:", "Language policy", "wiki/config.md", "type: config", "请选择或指定本次 wiki 使用的语种"],
         "references/wiki-schema.md",
     )
-    if "raw/" not in read(refs_dir / "graphifyignore-proposal.md"):
-        raise ValidationError("graphifyignore proposal must mention raw/ policy")
 
 
 def check_no_project_specific_content(root: Path) -> None:
@@ -183,12 +163,14 @@ def check_samples(root: Path) -> None:
         assert_contains(text, [f"type: {expected_type}", "status: draft", "language:", "raw/", "updated:"], f"sample {name}")
 
 
-def check_graphify_out_empty(root: Path) -> None:
-    output_root = root / "graphify-out"
-    if output_root.exists():
-        files = sorted(rel(path, root) for path in output_root.rglob("*") if path.is_file())
-        if files:
-            raise ValidationError(f"graphify-out contains files despite no approved real graph run: {files}")
+def check_no_generated_outputs(root: Path) -> None:
+    generated_roots = [root / "wiki"]
+    offenders: list[str] = []
+    for output_root in generated_roots:
+        if output_root.exists():
+            offenders.extend(rel(path, root) for path in output_root.rglob("*") if path.is_file())
+    if offenders:
+        raise ValidationError(f"repository contains generated knowledge output files: {sorted(offenders)}")
 
 
 def run_command(command: list[str], root: Path) -> str:
@@ -210,22 +192,7 @@ def check_helper_dry_runs(root: Path) -> None:
             "--target",
             "/tmp/llm-wiki-generic-agent-skill",
         ],
-        [sys.executable, "skills/llm-wiki/scripts/run_graphify.py", "--help"],
     ]
-    if (root / "raw").is_dir():
-        commands.append([sys.executable, "skills/llm-wiki/scripts/run_graphify.py", "--dry-run", "--mode", "raw-map"])
-        commands.append(
-            [
-                sys.executable,
-                "skills/llm-wiki/scripts/run_graphify.py",
-                "--dry-run",
-                "--mode",
-                "raw-audit",
-                "--allow-raw-audit",
-            ]
-        )
-    if (root / "wiki").is_dir():
-        commands.append([sys.executable, "skills/llm-wiki/scripts/run_graphify.py", "--dry-run", "--mode", "wiki-refresh"])
     for command in commands:
         output = run_command(command, root)
         joined = " ".join(command)
@@ -237,40 +204,6 @@ def check_helper_dry_runs(root: Path) -> None:
             if "dry_run: true" not in output or "no files written" not in output:
                 raise ValidationError(f"install dry-run did not prove no writes: {joined}")
             continue
-        if "run_graphify.py" in joined and "graphify not executed" not in output:
-            raise ValidationError(f"graphify dry-run did not prove no graph execution: {joined}")
-
-    with tempfile.TemporaryDirectory(prefix="llm-wiki-graphify-helper-") as tmp:
-        knowledge_root = Path(tmp).resolve()
-        (knowledge_root / "wiki").mkdir()
-        (knowledge_root / "raw").mkdir()
-        (knowledge_root / "nested" / "cwd").mkdir(parents=True)
-        (knowledge_root / "wiki" / "index.md").write_text("# Index\n", encoding="utf-8")
-        (knowledge_root / "raw" / "source.md").write_text("# Source\n", encoding="utf-8")
-        helper = root / "skills" / SKILL_NAME / "scripts" / "run_graphify.py"
-
-        cwd_discovery = run_command(
-            [sys.executable, str(helper), "--dry-run", "--mode", "raw-map"],
-            knowledge_root / "nested" / "cwd",
-        )
-        if f"repo_root: {knowledge_root}" not in cwd_discovery or "graphify not executed" not in cwd_discovery:
-            raise ValidationError("graphify helper did not discover the caller's knowledge repository from cwd")
-
-        explicit_root = run_command(
-            [
-                sys.executable,
-                str(helper),
-                "--repo-root",
-                str(knowledge_root),
-                "--dry-run",
-                "--mode",
-                "raw-audit",
-                "--allow-raw-audit",
-            ],
-            root,
-        )
-        if f"repo_root: {knowledge_root}" not in explicit_root or "graphify not executed" not in explicit_root:
-            raise ValidationError("graphify helper did not honor explicit --repo-root for installed-helper usage")
 
 
 def check_no_pycache(root: Path) -> None:
@@ -287,7 +220,7 @@ def run_all(root: Path) -> list[str]:
         check_no_project_specific_content,
         check_first_pass_page_plan,
         check_samples,
-        check_graphify_out_empty,
+        check_no_generated_outputs,
         check_helper_dry_runs,
         check_no_pycache,
     ]

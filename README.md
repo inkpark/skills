@@ -8,7 +8,7 @@ A collection of agent skills that extend capabilities across knowledge managemen
 
 These skills help agents capture, organize, query, and maintain reusable knowledge.
 
-- llm-wiki — Maintain a reviewable Markdown LLM Wiki from immutable raw notes, using guarded raw Graphify maps to improve wiki generation.
+- llm-wiki — Maintain a reviewable Markdown LLM Wiki from immutable raw notes, with language-aware ingest, query, lint, and durable wiki updates.
 
   ```bash
   npx skills@latest add inkpark/skills/llm-wiki

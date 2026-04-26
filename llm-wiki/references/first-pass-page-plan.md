@@ -29,7 +29,6 @@ When the language is selected for the first time, add or update `wiki/config.md`
 | `wiki/workflows/ingest.md` | workflow | skill | Define how agents transform raw notes into wiki pages. |
 | `wiki/workflows/query.md` | workflow | skill | Define query-first behavior against wiki pages and graph reports. |
 | `wiki/workflows/lint.md` | workflow | skill | Define consistency and health checks. |
-| `wiki/workflows/graphify.md` | workflow | Graphify reference | Define guarded graph generation and refresh rules. |
 | `wiki/sources/example-source-a.md` | source | `raw/example-source-a.md` | Summarize one source without replacing it. |
 | `wiki/sources/example-source-b.md` | source | `raw/example-source-b.md` | Summarize one source without replacing it. |
 | `wiki/concepts/example-shared-concept.md` | concept | multiple source pages | Synthesize only when a reusable idea appears across sources. |

@@ -17,7 +17,7 @@ An LLM Wiki concept page captures a reusable idea synthesized from one or more s
 
 ## Why it matters
 
-In a maintained knowledge repository, `raw/` preserves source evidence, `wiki/` stores reviewable semantic and procedural memory, and `graphify-out/` provides optional generated navigation over the compiled layer.
+In a maintained knowledge repository, `raw/` preserves source evidence, `wiki/` stores reviewable semantic and procedural memory,.
 
 ## Evidence
 
@@ -26,4 +26,3 @@ In a maintained knowledge repository, `raw/` preserves source evidence, `wiki/` 
 ## Related
 
 - [Ingest Workflow](../workflows/ingest.md)
-- [Graphify Workflow](../workflows/graphify.md)

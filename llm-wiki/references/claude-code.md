@@ -61,7 +61,7 @@ Dry-run output should include:
 - whether a `CLAUDE.md` pointer would be suggested;
 - whether an existing target would be overwritten in a real run.
 
-A dry-run must not install Claude Code, edit `.claude/settings.json`, run Graphify, or create/update `graphify-out/`.
+A dry-run must not install Claude Code, edit `.claude/settings.json`, or write wiki content.
 
 ## Invocation behavior
 
@@ -70,14 +70,13 @@ Claude Code should apply `llm-wiki` when the user asks to maintain or query the 
 - ingest selected raw notes into reviewable wiki pages;
 - update indexes, logs, source summaries, concept pages, or workflow pages;
 - lint for stale summaries, missing provenance, duplicate concepts, contradictions, or over-fragmentation;
-- generate or consult the raw Graphify map that helps draft or maintain wiki pages.
+- update cross-links, source summaries, concept pages, or workflow pages.
 
-For Graphify tasks, read `references/graphify.md` first. For page shape, read `references/wiki-schema.md` first.
+For page shape, read `references/wiki-schema.md` first.
 
 ## Claude-specific guardrails
 
 - Claude Code may have broad local file access depending on settings. Still treat `raw/` as immutable by policy.
-- Do not add hooks that automatically run Graphify or read the full knowledge repository on every prompt. Graphify builds must remain explicit because they may use model/API resources and can expose note contents to configured providers.
 - If using `.claude/settings.json`, prefer deny rules for secrets and generated/cache folders. Do not hide `skills/llm-wiki/` or `wiki/` from normal skill operation.
 - Keep `CLAUDE.md` content short and pointer-based to avoid a second copy of the skill.
 
@@ -86,7 +85,7 @@ Example pointer fallback:
 ```markdown
 # LLM Wiki Skill
 
-For tasks about ingesting, maintaining, querying, linting, or graphing the knowledge repository's LLM Wiki, read `skills/llm-wiki/SKILL.md` and follow it as the canonical workflow. Do not edit `raw/`. Do not run Graphify or install packages unless explicitly requested.
+For tasks about ingesting, maintaining, querying, or linting the knowledge repository's LLM Wiki, read `skills/llm-wiki/SKILL.md` and follow it as the canonical workflow. Do not edit `raw/`. Do not install packages unless explicitly requested.
 ```
 
 ## Post-install sanity check

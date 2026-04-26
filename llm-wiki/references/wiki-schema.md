@@ -1,17 +1,16 @@
 # LLM Wiki schema
 
-This schema defines the reviewable Markdown layer for the LLM Wiki. It is assistant-portable and applies before any Graphify-generated layer exists.
+This schema defines the reviewable Markdown layer for the LLM Wiki. It is assistant-portable and does not require generated graph tooling.
 
 ## Layering
 
 ```text
 raw/            immutable source evidence; read-only for this skill
 wiki/           maintained Markdown wiki; human-reviewable source of compiled knowledge
-graphify-out/   generated graph artifacts; reproducible and non-canonical
 skills/llm-wiki canonical skill package and workflow documentation
 ```
 
-Never write into `raw/`. Do not treat `graphify-out/` as authoritative content.
+Never write into `raw/`.
 
 ## Directory plan
 
@@ -161,7 +160,7 @@ Guidelines:
 - a short description of the wiki purpose;
 - links grouped by Sources, Concepts, and Workflows;
 - one-line summaries for each maintained page;
-- a note that `raw/` is immutable provenance and `graphify-out/` is generated.
+- a note that `raw/` is immutable provenance.
 
 ### `log`
 
@@ -212,4 +211,3 @@ A wiki lint should check:
 - no page is orphaned from `wiki/index.md` unless intentionally draft-only;
 - concept pages are not duplicative or over-fragmented;
 - `wiki/log.md` records significant maintenance actions;
-- Graphify reports, if present, are used only for navigation.

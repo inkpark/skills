@@ -9,7 +9,7 @@ The skill is portable when the target agent can:
 - read a local Markdown instruction file or skill folder;
 - inspect and edit the knowledge repository filesystem within the requested scope;
 - preserve the safety contract from `SKILL.md`, especially `raw/` immutability;
-- avoid package installs, model/API calls, and real Graphify runs unless explicitly requested.
+- avoid package installs and model/API calls unless explicitly requested.
 
 Do not fork the workflow for each agent. Keep `skills/llm-wiki/SKILL.md` as the canonical source and use agent-specific files only as short pointers or install targets.
 
@@ -49,7 +49,7 @@ Use a short pointer rather than copying the full skill body:
 ```markdown
 # LLM Wiki Skill
 
-For tasks about ingesting, maintaining, querying, linting, or graphing the knowledge repository's LLM Wiki, read `skills/llm-wiki/SKILL.md` and follow it as the canonical workflow. Do not edit `raw/`. Do not install packages, call models/APIs, or run Graphify unless explicitly requested.
+For tasks about ingesting, maintaining, querying, or linting the knowledge repository's LLM Wiki, read `skills/llm-wiki/SKILL.md` and follow it as the canonical workflow. Do not edit `raw/`. Do not install packages or call models/APIs unless explicitly requested.
 ```
 
 ## Agent adaptation checklist
