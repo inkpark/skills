@@ -38,6 +38,10 @@ wiki/
 
 The first pass for the knowledge repository should remain small: source pages for every current `raw/*.md`, workflow pages for the repeated procedures, and only a few concept pages that synthesize multiple sources.
 
+Generate or refresh source pages as a separate Source generation stage. For non-trivial source sets, delegate source-page drafting to sub-agents or equivalent isolated context workers so each worker reads only a bounded raw-file slice and returns source-page drafts, short summaries, evidence links, and blockers. The main agent should coordinate, review, and integrate drafts; it should not keep the whole raw corpus in context.
+
+After source pages are generated or refreshed, run Concept synthesis as its own stage. For non-trivial source sets, delegate concept discovery to sub-agents or equivalent isolated context workers so each worker reads only a bounded set of source pages and returns compact candidate concepts with evidence links. The main agent should integrate and deduplicate candidates; it should not keep the whole source-page corpus in context.
+
 ## Frontmatter
 
 All maintained wiki pages should start with YAML frontmatter:
@@ -159,6 +163,8 @@ Rules:
 
 Purpose: summarize one raw source without replacing it.
 
+Generation rule: create or update source pages through sub-agents/equivalent isolated workers for large or multi-source batches. Each worker should receive a bounded raw-file slice and produce source-page drafts plus compact summaries for the main agent to integrate.
+
 Required sections:
 
 1. `# <title>`
@@ -178,6 +184,8 @@ Guidelines:
 ### `concept`
 
 Purpose: synthesize reusable ideas across source pages.
+
+Generation rule: create or update concept pages after the relevant source pages exist. Use sub-agents/equivalent isolated workers for concept discovery on large or multi-source batches, then integrate only durable, deduplicated concepts.
 
 Required sections:
 
@@ -218,6 +226,16 @@ Guidelines:
 - links grouped by Sources, Concepts, and Workflows;
 - one-line summaries for each maintained page;
 - a note that `raw/` is immutable provenance.
+
+Index size and provenance rules:
+
+- Treat `wiki/index.md` as navigation, not complete provenance storage.
+- For index frontmatter, use `sources: []` or omit `sources`; do not copy every raw path into the index frontmatter.
+- In the body, list maintained `wiki/sources/*.md` pages rather than every raw file when the raw set is large.
+- Rebuild source links from current wiki pages with stable sorting and deduplication; never append historical entries blindly.
+- Store the complete raw-file inventory, hashes, and processing status in `wiki/manifest.json`.
+- Keep per-page raw provenance on source/concept pages, including clickable raw links in their body.
+- If the maintained source-page list itself becomes too large, group it by directory/topic/date or move the exhaustive catalog to `wiki/sources/README.md`, keeping `wiki/index.md` as a summary plus link.
 
 ### `log`
 

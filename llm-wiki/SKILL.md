@@ -22,6 +22,9 @@ If the user does not explicitly specify a working directory or knowledge reposit
 - Remember the selected wiki language in `wiki/config.md` using `language: <value>`, and reuse it on later invocations unless the user overrides it.
 - For many raw sources, use `wiki/manifest.json` for incremental batching instead of trying to generate the whole wiki in one pass. Default large-source threshold: more than 30 raw files. Default batch size: 20 raw files unless the user specifies another batch size.
 - Prefer small, reviewable wiki updates and record meaningful changes in `wiki/log.md`.
+- Keep `wiki/index.md` as a compact navigation catalog, not an ever-growing provenance dump. Do not append every raw file into an index `Sources` field/list. Store complete raw coverage in `wiki/manifest.json`, keep raw provenance on the relevant source/concept pages, and rebuild index source links from current `wiki/sources/*.md` pages with deduplication.
+- Source generation: generate or refresh source pages with sub-agents or equivalent isolated context workers whenever the agent environment supports them. Each worker should receive only a bounded raw-file slice plus the page schema and return source-page drafts/summaries; the main context should coordinate, review, and integrate rather than ingesting the entire raw corpus.
+- After generating or refreshing source pages, always run a bounded Concept synthesis pass. Use sub-agents or equivalent isolated context workers for this pass whenever the agent environment supports them, so the main context handles only plans, source-page summaries, proposed concepts, and final integration rather than every raw/source detail.
 
 ## Reference map
 
@@ -47,8 +50,16 @@ Use this workflow when the user invokes the skill without any other instruction,
 4. Inventory `raw/*.md` and existing `wiki/**/*.md` coverage without altering `raw/`.
 5. Create or update `wiki/manifest.json` with raw file paths, content hashes, target source pages, language, and status.
 6. If the selected raw set is larger than 30 files, or the pending changed/new set is larger than the batch size, enter batch mode and process only the next batch of pending raw files.
-7. Generate or update the wiki directly from `raw/`, keeping the first pass small and reviewable unless the user explicitly requested full generation.
-8. Update `wiki/index.md`, `wiki/manifest.json`, and append `wiki/log.md` with the language, changed pages, raw coverage, batch status, and verification.
+7. Generate or update source pages with sub-agents/equivalent isolated workers, keeping the first pass small and reviewable unless the user explicitly requested full generation:
+   - give each worker a bounded raw-file slice, target source-page paths, language, and source-page schema;
+   - require clickable raw provenance links and concise evidence-bound summaries;
+   - have workers return changed page paths, short page summaries, and any uncertainty/blockers for main-agent integration.
+8. After the source-page pass, run a Concept synthesis pass using sub-agents/equivalent isolated workers:
+   - give each worker a bounded set of source pages or source-page summaries, not the whole raw corpus;
+   - ask for reusable cross-source concepts, merge candidates, and evidence links;
+   - integrate only accepted concepts into `wiki/concepts/*.md`, avoiding duplicate or over-fragmented pages.
+9. Update `wiki/index.md`, `wiki/manifest.json`, and append `wiki/log.md` with the language, changed pages, raw coverage, concept synthesis status, batch status, and verification.
+   - Keep the index compact: summarize raw coverage counts and link to `wiki/manifest.json` or a dedicated source catalog when needed instead of expanding an unbounded raw-source list.
 
 ## Workflow: ingest plan
 
@@ -58,10 +69,12 @@ Use this workflow when the user invokes the skill without any other instruction,
 4. Update `wiki/manifest.json` before writing pages. Mark raw files as `new`, `changed`, `unchanged`, `missing-page`, `done`, or `skipped`.
 5. If there are more than 30 raw files or more pending files than the batch size, process only one batch at a time. Default batch size is 20; respect explicit user input such as "batch size 50".
 6. Map each raw source in the current batch to at least one `wiki/sources/*.md` page and at most a small justified set of concept/workflow pages.
-7. Draft source pages in the chosen wiki language, with provenance and `language` in frontmatter, concise claim summaries, and explicit Markdown links to the corresponding raw file(s).
-8. Draft concept/workflow pages in the chosen wiki language only when they synthesize multiple sources or encode reusable procedure; concept pages must link to the relevant source pages and raw file(s). Prefer creating concept pages after the first source-page pass, not during the first large batch unless the concept is clearly reusable.
-9. Update `wiki/index.md`, `wiki/manifest.json`, and append an entry to `wiki/log.md` for accepted writes.
-10. Stop before full wiki generation unless execution scope explicitly allows it.
+7. Draft source pages in the chosen wiki language through sub-agents/equivalent isolated workers, with provenance and `language` in frontmatter, concise claim summaries, and explicit Markdown links to the corresponding raw file(s). The main agent should pass bounded raw slices to workers and integrate their drafts, not read every raw source into one context.
+8. After source pages are drafted, run Concept synthesis with sub-agents/equivalent isolated context workers before the final index/log update. Each worker should inspect only a bounded slice of source pages plus existing concept titles/summaries, then return candidate concepts with evidence links.
+9. Draft concept/workflow pages in the chosen wiki language when they synthesize multiple sources, merge repeated ideas, or encode reusable procedure; concept pages must link to the relevant source pages and raw file(s). If no new concept qualifies, record that the Concept pass found no durable synthesis.
+10. Update `wiki/index.md`, `wiki/manifest.json`, and append an entry to `wiki/log.md` for accepted writes.
+   - Rebuild the index deterministically from maintained pages; do not append duplicate or historical `Sources` entries.
+11. Stop before full wiki generation unless execution scope explicitly allows it.
 
 ## Workflow: large raw sets
 
@@ -77,9 +90,11 @@ Use this workflow whenever `raw/` contains more than 30 Markdown files, or when 
    - `skipped`: intentionally not ingested, with a reason.
 3. Select the next batch in this priority order: `changed`, `missing-page`, `new`.
 4. Process at most the batch size. Default: 20 raw files. User override examples: `batch size 50`, `每批 10 个`.
-5. Generate source pages first. Defer broad concept synthesis until enough source pages exist to compare across batches.
-6. After every batch, update `wiki/manifest.json`, `wiki/index.md`, and `wiki/log.md` before continuing.
-7. If work remains after a batch, report the remaining counts and next batch recommendation instead of silently attempting an unbounded full generation.
+5. Generate source pages first with sub-agents/equivalent isolated workers over bounded raw-file slices. Do not load all raw files into the main context for source-page drafting.
+6. After each source batch, run a bounded Concept synthesis pass with sub-agents/equivalent isolated workers over the completed source pages for that batch plus concise summaries of existing concepts. Do not load all raw files into the main context for concept discovery.
+7. After every batch, update `wiki/manifest.json`, `wiki/index.md`, and `wiki/log.md` before continuing.
+   - For large sets, `wiki/index.md` should show counts, batch status, and links to source pages or grouped source catalogs; the exhaustive raw-file inventory belongs in `wiki/manifest.json`.
+8. If work remains after a batch, report the remaining counts and next batch recommendation instead of silently attempting an unbounded full generation.
 
 ## Workflow: query
 

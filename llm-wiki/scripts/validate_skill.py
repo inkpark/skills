@@ -99,7 +99,17 @@ def check_portable_core(root: Path) -> None:
         raise ValidationError(f"SKILL.md core contains platform-specific implementation snippets: {banned}")
     assert_contains(
         text,
-        ["raw/", "wiki/", "session working directory", "wiki language", "raw file", "references/wiki-schema.md"],
+        [
+            "raw/",
+            "wiki/",
+            "session working directory",
+            "wiki language",
+            "raw file",
+            "references/wiki-schema.md",
+            "Source generation",
+            "Concept synthesis",
+            "sub-agents",
+        ],
         "SKILL.md portable core",
     )
 
@@ -129,6 +139,9 @@ def check_references(root: Path) -> None:
             "type: config",
             "clickable raw file links",
             "请选择或指定本次 wiki 使用的语种",
+            "Source generation",
+            "Concept synthesis",
+            "sub-agents",
         ],
         "references/wiki-schema.md",
     )
@@ -156,7 +169,21 @@ def check_first_pass_page_plan(root: Path) -> None:
         raise ValidationError(f"raw source set changed; update page plan. expected={expected_raw}, actual={raw_files}")
 
     plan = read(root / "skills" / SKILL_NAME / "references" / "first-pass-page-plan.md")
-    assert_contains(plan, ["Wiki language", "wiki/config.md", "wiki/manifest.json", "batch size", "language:", "](../../raw/"], "first-pass page plan")
+    assert_contains(
+        plan,
+        [
+            "Wiki language",
+            "wiki/config.md",
+            "wiki/manifest.json",
+            "batch size",
+            "language:",
+            "](../../raw/",
+            "Source generation",
+            "Concept synthesis",
+            "sub-agents",
+        ],
+        "first-pass page plan",
+    )
     for raw_path, page_path in EXPECTED_RAW_TO_SOURCE_PAGE.items():
         assert_contains(plan, [raw_path, page_path], "first-pass page plan")
 

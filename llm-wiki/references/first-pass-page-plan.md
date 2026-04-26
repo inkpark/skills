@@ -25,7 +25,7 @@ Default large-source threshold: more than 30 raw Markdown files.
 
 Default batch size: 20 raw files, unless the user explicitly specifies another value.
 
-Before generating source pages, create or refresh `wiki/manifest.json` with raw paths, hashes, target source pages, language, status, and batch metadata. For large raw sets, select one batch of pending files (`changed`, `missing-page`, then `new`) and update the manifest after the batch completes.
+Before generating source pages, create or refresh `wiki/manifest.json` with raw paths, hashes, target source pages, language, status, and batch metadata. For large raw sets, select one batch of pending files (`changed`, `missing-page`, then `new`) and update the manifest after the batch completes. Run Source generation with sub-agents or equivalent isolated context workers over bounded raw-file slices; the main agent should integrate compact source-page drafts/summaries rather than load every raw source into one context. After the source-page pass, run Concept synthesis with sub-agents or equivalent isolated context workers; the main agent should integrate compact candidate concepts rather than load every source detail into one context.
 
 ## Proposed wiki pages
 
@@ -33,7 +33,7 @@ Before generating source pages, create or refresh `wiki/manifest.json` with raw 
 |---|---|---|---|
 | `wiki/config.md` | config | none | Remember wiki-level settings such as selected language. |
 | `wiki/manifest.json` | manifest | raw source set | Track raw hashes, target pages, statuses, and batch progress. |
-| `wiki/index.md` | index | selected source set | Catalog maintained wiki pages and summaries. |
+| `wiki/index.md` | index | maintained wiki pages | Compact navigation catalog with summaries, raw coverage counts, and links to manifest/source catalogs; not an exhaustive raw-source dump. |
 | `wiki/log.md` | log | selected source set | Append-only record of ingests, queries, lints, and graph refreshes. |
 | `wiki/workflows/ingest.md` | workflow | skill | Define how agents transform raw notes into wiki pages. |
 | `wiki/workflows/query.md` | workflow | skill | Define query-first behavior against wiki pages and graph reports. |
