@@ -31,8 +31,7 @@ If the user does not explicitly specify a working directory or knowledge reposit
 Read only the references needed for the current request:
 
 - `references/wiki-schema.md` — directory layout, frontmatter, page types, index/log/config rules, page-plan guardrails.
-- `references/ai-agent-integration.md` — portable setup patterns for agents beyond the named Codex/Claude Code references.
-- `references/codex.md` — Codex installation and usage notes.
+- `references/ai-agent-integration.md` — portable setup patterns for agents beyond the named Claude Code reference.
 - `references/claude-code.md` — Claude Code installation and usage notes.
 - `references/first-pass-page-plan.md` — initial page plan and sample style for the current `<knowledge-repo>` raw sources.
 
@@ -121,8 +120,3 @@ Check for:
 - stale or missing `wiki/manifest.json` entries, including raw hashes that no longer match source pages.
 
 Report proposed fixes before large rewrites.
-
-## Optional helpers
-
-- `scripts/install_skill.py --help` and `--dry-run` show Codex, Claude Code, or generic agent install targets without writing.
-- `scripts/install_skill.py --dry-run --platform generic-agent --target <agent-skill-dir>` previews a copy/symlink install for other agents.

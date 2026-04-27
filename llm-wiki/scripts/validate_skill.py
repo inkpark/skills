@@ -17,7 +17,6 @@ SKILL_NAME = "llm-wiki"
 REQUIRED_REFS = {
     "wiki-schema.md",
     "ai-agent-integration.md",
-    "codex.md",
     "claude-code.md",
 }
 EXPECTED_RAW_TO_SOURCE_PAGE = {
@@ -25,9 +24,7 @@ EXPECTED_RAW_TO_SOURCE_PAGE = {
     "raw/example-source-b.md": "wiki/sources/example-source-b.md",
 }
 BANNED_SKILL_CORE_SNIPPETS = (
-    "~/.codex",
     "~/.claude",
-    ".codex/skills",
     ".claude/skills",
 )
 BANNED_PROJECT_SPECIFIC_SNIPPETS = (
@@ -122,7 +119,7 @@ def check_references(root: Path) -> None:
     agent_text = read(refs_dir / "ai-agent-integration.md")
     assert_contains(
         agent_text,
-        ["generic-agent", "LLM_WIKI_SKILL_TARGET", "AI_AGENT_SKILL_TARGET", "Pointer fallback"],
+        ["Portability contract", "Integration patterns", "Pointer fallback"],
         "references/ai-agent-integration.md",
     )
     schema_text = read(refs_dir / "wiki-schema.md")
@@ -151,7 +148,7 @@ def check_no_project_specific_content(root: Path) -> None:
     skill_root = root / "skills" / SKILL_NAME
     offenders: list[str] = []
     for path in sorted(skill_root.rglob("*")):
-        if not path.is_file() or path.name == "validate_skill.py":
+        if not path.is_file() or path.name == "validate_skill.py" or path.suffix == ".pyc":
             continue
         text = read(path)
         for snippet in BANNED_PROJECT_SPECIFIC_SNIPPETS:
@@ -216,34 +213,6 @@ def run_command(command: list[str], root: Path) -> str:
     return completed.stdout.strip()
 
 
-def check_helper_dry_runs(root: Path) -> None:
-    commands = [
-        [sys.executable, "skills/llm-wiki/scripts/install_skill.py", "--help"],
-        [sys.executable, "skills/llm-wiki/scripts/install_skill.py", "--dry-run", "--platform", "codex"],
-        [sys.executable, "skills/llm-wiki/scripts/install_skill.py", "--dry-run", "--platform", "claude-code"],
-        [
-            sys.executable,
-            "skills/llm-wiki/scripts/install_skill.py",
-            "--dry-run",
-            "--platform",
-            "generic-agent",
-            "--target",
-            "/tmp/llm-wiki-generic-agent-skill",
-        ],
-    ]
-    for command in commands:
-        output = run_command(command, root)
-        joined = " ".join(command)
-        if "--help" in command:
-            if "usage:" not in output:
-                raise ValidationError(f"help command did not print usage: {joined}")
-            continue
-        if "install_skill.py" in joined:
-            if "dry_run: true" not in output or "no files written" not in output:
-                raise ValidationError(f"install dry-run did not prove no writes: {joined}")
-            continue
-
-
 def check_no_pycache(root: Path) -> None:
     files = sorted(rel(path, root) for path in (root / "skills" / SKILL_NAME).rglob("*") if path.name == "__pycache__" or path.suffix == ".pyc")
     if files:
@@ -259,7 +228,6 @@ def run_all(root: Path) -> list[str]:
         check_first_pass_page_plan,
         check_samples,
         check_no_generated_outputs,
-        check_helper_dry_runs,
         check_no_pycache,
     ]
     passed: list[str] = []
