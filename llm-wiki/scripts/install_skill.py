@@ -20,6 +20,18 @@ from pathlib import Path
 
 SKILL_NAME = "llm-wiki"
 PLATFORMS = ("codex", "claude-code", "generic-agent")
+IGNORED_COPY_DIR_NAMES = {
+    ".git",
+    ".mypy_cache",
+    ".omx",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+    "venv",
+}
+IGNORED_COPY_FILE_NAMES = {".DS_Store", "settings.local.json"}
+IGNORED_COPY_SUFFIXES = {".pyc"}
 
 
 def skill_root() -> Path:
@@ -44,21 +56,40 @@ def default_target(platform: str) -> Path:
     raise ValueError(f"unsupported platform: {platform}")
 
 
+def normalize_path(path: Path) -> Path:
+    return path.expanduser().resolve(strict=False)
+
+
 def resolve_target(platform: str, target: str | None) -> Path:
-    return Path(target).expanduser().resolve() if target else default_target(platform).expanduser().resolve()
+    return normalize_path(Path(target)) if target else normalize_path(default_target(platform))
 
 
 def refuse_self_install(src: Path, dst: Path) -> None:
     """Avoid deleting or nesting the canonical skill during installation."""
-    src_resolved = src.resolve()
-    dst_resolved = dst.resolve() if dst.exists() else dst
+    src_resolved = normalize_path(src)
+    dst_resolved = normalize_path(dst)
     if dst_resolved == src_resolved:
         raise SystemExit("Refusing to install onto the canonical source directory.")
     try:
         dst_resolved.relative_to(src_resolved)
     except ValueError:
+        pass
+    else:
+        raise SystemExit("Refusing to install inside the canonical source directory.")
+    try:
+        src_resolved.relative_to(dst_resolved)
+    except ValueError:
         return
-    raise SystemExit("Refusing to install inside the canonical source directory.")
+    raise SystemExit("Refusing to install to a directory that contains the canonical source directory.")
+
+
+def ignored_copy_entries(_source_dir: str, names: list[str]) -> set[str]:
+    ignored: set[str] = set()
+    for name in names:
+        candidate = Path(name)
+        if name in IGNORED_COPY_DIR_NAMES or name in IGNORED_COPY_FILE_NAMES or candidate.suffix in IGNORED_COPY_SUFFIXES:
+            ignored.add(name)
+    return ignored
 
 
 def remove_existing(dst: Path) -> None:
@@ -69,7 +100,7 @@ def remove_existing(dst: Path) -> None:
 
 
 def copy_tree(src: Path, dst: Path) -> None:
-    shutil.copytree(src, dst, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+    shutil.copytree(src, dst, ignore=ignored_copy_entries)
 
 
 def print_plan(platform: str, method: str, src: Path, dst: Path, dry_run: bool) -> None:

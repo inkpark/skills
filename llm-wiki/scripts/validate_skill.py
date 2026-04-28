@@ -10,6 +10,7 @@ import argparse
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Iterable
 
@@ -43,7 +44,22 @@ class ValidationError(AssertionError):
 
 
 def repo_root() -> Path:
-    return Path(__file__).resolve().parents[3]
+    return Path(__file__).resolve().parents[1]
+
+
+def resolve_validation_paths(candidate: Path) -> tuple[Path, Path]:
+    root = candidate.expanduser().resolve(strict=False)
+    skill_root = root / "skills" / SKILL_NAME
+    if (skill_root / "SKILL.md").is_file():
+        return root, skill_root
+    direct_skill_root = root / SKILL_NAME
+    if (direct_skill_root / "SKILL.md").is_file():
+        return root, direct_skill_root
+    if root.name == SKILL_NAME and (root / "SKILL.md").is_file():
+        return root.parent, root
+    raise ValidationError(
+        "--repo-root must point to a repository root containing llm-wiki (directly or under skills/) or to the llm-wiki skill directory itself"
+    )
 
 
 def rel(path: Path, root: Path) -> str:
@@ -77,8 +93,8 @@ def assert_contains(text: str, needles: Iterable[str], context: str) -> None:
         raise ValidationError(f"{context} missing required terms: {missing}")
 
 
-def check_skill_frontmatter(root: Path) -> None:
-    text = read(root / "skills" / SKILL_NAME / "SKILL.md")
+def check_skill_frontmatter(root: Path, skill_root: Path) -> None:
+    text = read(skill_root / "SKILL.md")
     meta = parse_frontmatter(text)
     if meta.get("name") != SKILL_NAME:
         raise ValidationError(f"frontmatter name must be {SKILL_NAME!r}")
@@ -89,8 +105,8 @@ def check_skill_frontmatter(root: Path) -> None:
         raise ValidationError("frontmatter name must be lowercase hyphenated")
 
 
-def check_portable_core(root: Path) -> None:
-    text = read(root / "skills" / SKILL_NAME / "SKILL.md")
+def check_portable_core(root: Path, skill_root: Path) -> None:
+    text = read(skill_root / "SKILL.md")
     banned = [snippet for snippet in BANNED_SKILL_CORE_SNIPPETS if snippet in text]
     if banned:
         raise ValidationError(f"SKILL.md core contains platform-specific implementation snippets: {banned}")
@@ -111,8 +127,8 @@ def check_portable_core(root: Path) -> None:
     )
 
 
-def check_references(root: Path) -> None:
-    refs_dir = root / "skills" / SKILL_NAME / "references"
+def check_references(root: Path, skill_root: Path) -> None:
+    refs_dir = skill_root / "references"
     missing = sorted(name for name in REQUIRED_REFS if not (refs_dir / name).is_file())
     if missing:
         raise ValidationError(f"missing required references: {missing}")
@@ -144,8 +160,7 @@ def check_references(root: Path) -> None:
     )
 
 
-def check_no_project_specific_content(root: Path) -> None:
-    skill_root = root / "skills" / SKILL_NAME
+def check_no_project_specific_content(root: Path, skill_root: Path) -> None:
     offenders: list[str] = []
     for path in sorted(skill_root.rglob("*")):
         if not path.is_file() or path.name == "validate_skill.py" or path.suffix == ".pyc":
@@ -158,14 +173,14 @@ def check_no_project_specific_content(root: Path) -> None:
         raise ValidationError("project-specific content remains: " + "; ".join(offenders))
 
 
-def check_first_pass_page_plan(root: Path) -> None:
+def check_first_pass_page_plan(root: Path, skill_root: Path) -> None:
     raw_dir = root / "raw"
     raw_files = sorted(rel(path, root) for path in raw_dir.glob("*.md")) if raw_dir.exists() else []
     expected_raw = sorted(EXPECTED_RAW_TO_SOURCE_PAGE)
     if raw_files and raw_files != expected_raw:
         raise ValidationError(f"raw source set changed; update page plan. expected={expected_raw}, actual={raw_files}")
 
-    plan = read(root / "skills" / SKILL_NAME / "references" / "first-pass-page-plan.md")
+    plan = read(skill_root / "references" / "first-pass-page-plan.md")
     assert_contains(
         plan,
         [
@@ -189,8 +204,8 @@ def check_first_pass_page_plan(root: Path) -> None:
         raise ValidationError(f"first-pass concept set is too broad: {concept_pages}")
 
 
-def check_samples(root: Path) -> None:
-    samples_dir = root / "skills" / SKILL_NAME / "samples"
+def check_samples(root: Path, skill_root: Path) -> None:
+    samples_dir = skill_root / "samples"
     for name, expected_type in (("source-page.md", "source"), ("concept-page.md", "concept")):
         text = read(samples_dir / name)
         if not text.startswith("---\n"):
@@ -198,7 +213,7 @@ def check_samples(root: Path) -> None:
         assert_contains(text, [f"type: {expected_type}", "status: draft", "language:", "raw/", "](../../raw/", "updated:"], f"sample {name}")
 
 
-def check_no_generated_outputs(root: Path) -> None:
+def check_no_generated_outputs(root: Path, skill_root: Path) -> None:
     generated_roots = [root / "wiki"]
     offenders: list[str] = []
     for output_root in generated_roots:
@@ -213,13 +228,38 @@ def run_command(command: list[str], root: Path) -> str:
     return completed.stdout.strip()
 
 
-def check_no_pycache(root: Path) -> None:
-    files = sorted(rel(path, root) for path in (root / "skills" / SKILL_NAME).rglob("*") if path.name == "__pycache__" or path.suffix == ".pyc")
-    if files:
-        raise ValidationError(f"skill package contains generated Python cache files: {files}")
+def check_install_copy_filter(root: Path, skill_root: Path) -> None:
+    install_script = skill_root / "scripts" / "install_skill.py"
+    with tempfile.TemporaryDirectory() as tmpdir:
+        target = Path(tmpdir) / SKILL_NAME
+        run_command(
+            [
+                sys.executable,
+                str(install_script),
+                "--platform",
+                "generic-agent",
+                "--target",
+                str(target),
+                "--confirm",
+            ],
+            skill_root,
+        )
+        offenders = sorted(
+            rel(path, target)
+            for path in target.rglob("*")
+            if path.is_file() and (
+                path.name in {".DS_Store", "settings.local.json"}
+                or path.suffix == ".pyc"
+                or ".omx" in path.parts
+                or "__pycache__" in path.parts
+            )
+        )
+    if offenders:
+        raise ValidationError(f"install copy leaked filtered local artifacts: {offenders}")
 
 
-def run_all(root: Path) -> list[str]:
+def run_all(root: Path) -> tuple[list[str], Path]:
+    workspace_root, skill_root = resolve_validation_paths(root)
     checks = [
         check_skill_frontmatter,
         check_portable_core,
@@ -228,28 +268,28 @@ def run_all(root: Path) -> list[str]:
         check_first_pass_page_plan,
         check_samples,
         check_no_generated_outputs,
-        check_no_pycache,
+        check_install_copy_filter,
     ]
     passed: list[str] = []
     for check in checks:
-        check(root)
+        check(workspace_root, skill_root)
         passed.append(check.__name__)
-    return passed
+    return passed, skill_root
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo-root", type=Path, default=repo_root(), help="Vault/repo root to validate")
+    parser.add_argument("--repo-root", type=Path, default=repo_root(), help="Repository root or llm-wiki skill directory to validate")
     args = parser.parse_args()
-    root = args.repo_root.resolve()
+    root = args.repo_root.expanduser().resolve(strict=False)
     try:
-        passed = run_all(root)
+        passed, skill_root = run_all(root)
     except ValidationError as exc:
         print(f"FAIL: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
     for check in passed:
         print(f"PASS: {check}")
-    print(f"PASS: validated {SKILL_NAME} skill package at {root / 'skills' / SKILL_NAME}")
+    print(f"PASS: validated {SKILL_NAME} skill package at {skill_root}")
 
 
 if __name__ == "__main__":
