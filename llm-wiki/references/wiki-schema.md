@@ -14,6 +14,8 @@ Never write into `raw/`.
 
 ## Repository root resolution
 
+`SKILL.md` is the canonical workflow source for repository-root resolution behavior. Keep this reference focused on path shape and page-schema constraints.
+
 When the user does not explicitly provide a working directory or knowledge repository path, the current session working directory is the knowledge repository root.
 
 Rules:
@@ -38,9 +40,7 @@ wiki/
 
 The first pass for the knowledge repository should remain small: source pages for every current `raw/*.md`, workflow pages for the repeated procedures, and only a few concept pages that synthesize multiple sources.
 
-Generate or refresh source pages as a separate Source generation stage. For non-trivial source sets, delegate source-page drafting to sub-agents or equivalent isolated context workers so each worker reads only a bounded raw-file slice and returns source-page drafts, short summaries, evidence links, and blockers. The main agent should coordinate, review, and integrate drafts; it should not keep the whole raw corpus in context.
-
-After source pages are generated or refreshed, run Concept synthesis as its own stage. For non-trivial source sets, delegate concept discovery to sub-agents or equivalent isolated context workers so each worker reads only a bounded set of source pages and returns compact candidate concepts with evidence links. The main agent should integrate and deduplicate candidates; it should not keep the whole source-page corpus in context.
+For the full execution order, batching thresholds, and worker orchestration rules for Source generation and Concept synthesis with sub-agents, follow `SKILL.md`. This schema keeps only the structural constraints those stages must satisfy.
 
 ## Frontmatter
 
@@ -69,6 +69,8 @@ Rules:
 - Keep tags sparse and reusable.
 
 ## Language policy
+
+`SKILL.md` is the canonical workflow source for the language gate. This section keeps the required prompt and durable page constraints that maintained pages must satisfy.
 
 The target wiki language is a user-facing content decision. Before creating or updating `wiki/` pages, the agent must confirm the language when it is not explicit in the user's request or an accepted page plan.
 
@@ -118,7 +120,7 @@ Agents may create or update this page when the user selects a wiki language. Do 
 
 ## Manifest
 
-`wiki/manifest.json` enables incremental generation for large raw sets. It should be updated before and after each ingest batch.
+`wiki/manifest.json` enables incremental generation for large raw sets. Follow `SKILL.md` for the manifest lifecycle and batching behavior; this section defines the required shape and status vocabulary.
 
 Recommended shape:
 
@@ -163,7 +165,7 @@ Rules:
 
 Purpose: summarize one raw source without replacing it.
 
-Generation rule: create or update source pages through sub-agents/equivalent isolated workers for large or multi-source batches. Each worker should receive a bounded raw-file slice and produce source-page drafts plus compact summaries for the main agent to integrate.
+Generation rule: create or update source pages during the Source generation stage described in `SKILL.md`. For large or multi-source batches, use sub-agents/equivalent isolated workers with bounded raw-file slices and integrate their drafts into the maintained wiki.
 
 Required sections:
 
@@ -185,7 +187,7 @@ Guidelines:
 
 Purpose: synthesize reusable ideas across source pages.
 
-Generation rule: create or update concept pages after the relevant source pages exist. Use sub-agents/equivalent isolated workers for concept discovery on large or multi-source batches, then integrate only durable, deduplicated concepts.
+Generation rule: create or update concept pages after the Concept synthesis stage described in `SKILL.md`. For large or multi-source batches, use sub-agents/equivalent isolated workers and integrate only durable, deduplicated concepts.
 
 Required sections:
 
@@ -264,7 +266,7 @@ Do not rewrite old entries except to correct formatting mistakes.
 
 ## Ingest guardrails
 
-Before writing wiki pages, prepare a page plan containing:
+Before writing wiki pages, prepare a page plan containing the fields below. Use `SKILL.md` as the canonical source for execution order, language-gate decisions, batching thresholds, and Source generation / Concept synthesis behavior.
 
 - target wiki language and whether it was explicitly provided or user-selected after prompting;
 - whether the language was read from or written to `wiki/config.md`;

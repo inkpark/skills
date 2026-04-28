@@ -30,6 +30,7 @@ If the user does not explicitly specify a working directory or knowledge reposit
 
 Read only the references needed for the current request:
 
+- `SKILL.md` — canonical workflow behavior for language gating, batching, manifest lifecycle, Source generation, and Concept synthesis.
 - `references/wiki-schema.md` — directory layout, frontmatter, page types, index/log/config rules, page-plan guardrails.
 - `references/ai-agent-integration.md` — portable setup patterns for agents beyond the named Claude Code reference.
 - `references/claude-code.md` — Claude Code installation and usage notes.

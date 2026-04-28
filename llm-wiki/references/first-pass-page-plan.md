@@ -13,6 +13,8 @@ For large repositories, sample first and propose a staged plan instead of genera
 
 ## Wiki language
 
+`SKILL.md` is the canonical workflow source for the language gate and reuse of `wiki/config.md`. This template keeps only the page-plan fields you must fill in.
+
 Target wiki language: `<ask the user if not explicit; examples: zh-CN, en, bilingual, or another user-specified language>`.
 
 Do not begin writing `wiki/` pages until the user has explicitly specified or selected this value. Record the selected value in each new maintained page's frontmatter as `language: <value>`.
@@ -21,11 +23,13 @@ When the language is selected for the first time, add or update `wiki/config.md`
 
 ## Batch and manifest plan
 
+Use `SKILL.md` as the canonical workflow source for batching, manifest lifecycle, Source generation, and Concept synthesis. This template records the decisions and outputs for the current first pass.
+
 Default large-source threshold: more than 30 raw Markdown files.
 
 Default batch size: 20 raw files, unless the user explicitly specifies another value.
 
-Before generating source pages, create or refresh `wiki/manifest.json` with raw paths, hashes, target source pages, language, status, and batch metadata. For large raw sets, select one batch of pending files (`changed`, `missing-page`, then `new`) and update the manifest after the batch completes. Run Source generation with sub-agents or equivalent isolated context workers over bounded raw-file slices; the main agent should integrate compact source-page drafts/summaries rather than load every raw source into one context. After the source-page pass, run Concept synthesis with sub-agents or equivalent isolated context workers; the main agent should integrate compact candidate concepts rather than load every source detail into one context.
+Before generating source pages, create or refresh `wiki/manifest.json` with raw paths, hashes, target source pages, language, status, and batch metadata. For large raw sets, record which pending batch is being processed and whether Source generation / Concept synthesis will use sub-agents or equivalent isolated context workers.
 
 ## Proposed wiki pages
 
