@@ -25,7 +25,7 @@ description: "Automates the commit-merge-push workflow through the /dev-flow sla
 
 ### 配置文件
 
-在项目根目录创建 `.dev-flow/config.yaml`（该目录应加入 `.gitignore`）：
+在项目根目录创建 `.dev-flow/config.yaml`。首次运行时如果不存在则自动创建，并同步更新 `.gitignore`：
 
 ```yaml
 target_branch: test
@@ -39,8 +39,10 @@ protected_branches: []
   - `-u`：仅暂存已跟踪文件的修改和删除，不包含新文件
   - `.`：暂存当前目录及子目录下的新增和修改，不包含删除
 - `protected_branches`：受保护分支列表（如 `["main", "master"]`），在这些分支上执行 `/dev-flow` 时会直接拒绝
-- 如果配置文件不存在，执行命令时自动创建并使用默认值
-- 建议将 `.dev-flow/` 目录加入项目的 `.gitignore`
+- 如果配置文件不存在，执行命令时自动创建：
+  1. 创建 `.dev-flow/` 目录和 `config.yaml`（使用默认值）
+  2. 检查项目根目录的 `.gitignore`，确保包含 `.dev-flow/` 条目；如果没有则追加
+  3. 本次提交时会一并提交 `.gitignore` 的修改和 `.dev-flow/config.yaml`
 
 ## 默认工作流：merge-test
 
@@ -50,15 +52,22 @@ protected_branches: []
 
 ### 执行流程
 
-1. 读取 `.dev-flow/config.yaml`，获取配置项：
-   - `target_branch`（默认 `test`）
-   - `add_mode`（默认 `-A`）
-   - `protected_branches`（默认 `[]`）
+1. 读取配置：
+   - 如果 `.dev-flow/config.yaml` 存在 → 直接读取配置项
+   - 如果不存在 → 自动创建：
+     a. 创建 `.dev-flow/` 目录和 `config.yaml`（写入默认配置）
+     b. 检查项目根目录 `.gitignore` 是否包含 `.dev-flow/` 条目：
+        - 如果 `.gitignore` 不存在 → 创建并写入 `.dev-flow/`
+        - 如果存在但不含 `.dev-flow/` → 追加 `.dev-flow/` 条目
+        - 如果已包含 → 跳过
+     c. 记录：后续 `git add` 和提交时一并包含 `.gitignore` 和 `.dev-flow/config.yaml` 的修改
+   - 配置项：`target_branch`（默认 `test`）、`add_mode`（默认 `-A`）、`protected_branches`（默认 `[]`）
 2. 记录当前分支名：`git branch --show-current`，记为 `WORKING_BRANCH`
 3. 检查 `WORKING_BRANCH` 是否在 `protected_branches` 中：
    - 如果在，立即报错终止：
      > 当前分支 `<WORKING_BRANCH>` 在受保护分支列表中，不允许通过 /dev-flow 操作。请手动处理。
 4. `git add <add_mode>` — 暂存改动（模式由 `add_mode` 配置决定，默认 `-A`）
+   - 如果步骤 1 中自动创建了文件，额外执行 `git add .dev-flow/config.yaml .gitignore` 确保这些文件被纳入本次提交
 5. `git diff --cached` — 获取暂存区 diff 内容
 6. 分析 diff 内容，生成有意义的 commit message。语言选择规则：如果 diff 或项目文件中包含中文注释、字符串、文档 → 使用中文；否则使用英文。
 7. `git commit -m "<生成的 message>"`
