@@ -13,6 +13,7 @@ description: "Automates the commit-merge-push workflow: auto-commit, merge to ta
 |------|------|
 | `/dev-flow` | 执行默认的 `merge-test` 工作流 |
 | `/dev-flow:merge-test` | 同上（显式指定工作流） |
+| `/dev-flow:commit-push` | 执行 `commit-push` 工作流 |
 
 未来可扩展 `/dev-flow:hotfix`、`/dev-flow:release` 等子命令。
 
@@ -28,7 +29,7 @@ target_branch: test
 
 `target_branch` 是合并目标分支名，默认 `test`。绝大多数场景只需这一项。
 
-首次运行时同时确保 `.dev-flow/` 已写入 `.gitignore`（不存在则创建，存在则追加），并在本次提交中一并纳入 `.gitignore` 和 `.dev-flow/config.yaml`。
+每次运行前都确保 `.dev-flow/` 已写入 `.gitignore`（不存在则创建，存在则追加）；若 `.dev-flow/` 已被 `git` 跟踪，则先中止 `merge-test` 并询问用户：由我代为执行 `git rm --cached -r .dev-flow/`，还是由用户自行清理后再继续。
 
 <details>
 <summary>高级配置</summary>
@@ -62,6 +63,18 @@ protected_branches: [] # 禁止操作的分支
 
 Commit message 语言规则：diff 或项目文件中包含中文（注释、字符串、文档）则用中文，否则用英文。
 
+## 工作流：commit-push
+
+先 `git add`、`git commit`，再 `git pull`，最后将当前分支推送到远程；不执行合并到其他分支的操作。
+
+### 主流程
+
+1. **检查分支安全** — `git branch --show-current` 记录 `WORKING_BRANCH`；如果在 `protected_branches` 中则拒绝
+2. **暂存改动** — 执行 `git add <add_mode>`
+3. **提交改动** — 执行 `git commit -m`，提交信息规则同 `merge-test`
+4. **拉取远程更新** — 在当前分支执行 `git pull`
+5. **推送当前分支** — 执行 `git push origin <WORKING_BRANCH>`（首次推送使用 `-u`）
+
 ### 异常处理
 
 | 场景 | 行为 |
@@ -80,10 +93,11 @@ Commit message 语言规则：diff 或项目文件中包含中文（注释、字
 - **冲突立即停止** — 不推送、不切回、不自动解决
 - **报错信息明确** — 每步失败说明原因、当前状态和下一步操作
 - **远程固定为 `origin`** — 不可配置
+- **`.dev-flow/` 永不入库** — `.dev-flow/` 及其子文件不得被 `git` 跟踪；若检测到已跟踪条目，`merge-test` 必须暂停并让用户选择由我执行 `git rm --cached -r .dev-flow/` 或由用户自行处理。
 - **提交信息禁止 AI 协作署名** — `Co-authored-by:` 或其他 AI 协作/协同署名 trailer 不得出现在最终 commit message 中。
 
 ## 扩展子命令
 
 添加新工作流时，在本文档新增 `## 工作流：<name>` 章节即可。用户通过 `/dev-flow:<name>` 调用。
 
-当前已实现：`merge-test`（默认）。
+当前已实现：`merge-test`（默认）、`commit-push`。
