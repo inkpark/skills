@@ -54,7 +54,7 @@ protected_branches: [] # 禁止操作的分支
 
 1. **读取配置** — 获取 `target_branch`、`add_mode`、`protected_branches`（不存在则自动创建）
 2. **检查分支安全** — `git branch --show-current` 记录 `WORKING_BRANCH`；如果在 `protected_branches` 中则拒绝
-3. **提交** — `git add <add_mode>` → `git diff --cached` → 分析 diff 生成 commit message → `git commit -m`
+3. **提交** — `git add <add_mode>` → `git diff --cached` → 分析 diff 生成 commit message → `git commit -m`；提交信息中不得包含 `Co-authored-by:` 或其他 AI 协作签名尾注。
 4. **无改动时** — 询问用户是否跳过提交直接合并推送；用户拒绝则终止
 5. **切换到目标分支** — 确保 `target_branch` 存在（本地检查 → 远程检查 → 新建）→ `git checkout` → `git pull`
 6. **合并** — `git merge --no-ff <WORKING_BRANCH>`
@@ -80,6 +80,7 @@ Commit message 语言规则：diff 或项目文件中包含中文（注释、字
 - **冲突立即停止** — 不推送、不切回、不自动解决
 - **报错信息明确** — 每步失败说明原因、当前状态和下一步操作
 - **远程固定为 `origin`** — 不可配置
+- **提交信息禁止 AI 协作署名** — `Co-authored-by:` 或其他 AI 协作/协同署名 trailer 不得出现在最终 commit message 中。
 
 ## 扩展子命令
 
